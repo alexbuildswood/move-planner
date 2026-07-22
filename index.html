@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Move planner</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root{
     --bg:#f4f4f2;
@@ -86,6 +87,33 @@
   .cd-form{padding:4px 20px 24px;border-top:0.5px solid var(--border);margin-top:8px;padding-top:18px;}
   .cd-form label{display:block;font-size:12px;color:var(--text-secondary);margin-bottom:5px;}
   .cd-form input[type="text"],.cd-form input[type="date"]{width:100%;padding:9px 10px;border:1px solid var(--border-strong);border-radius:8px;font-size:14px;font-family:inherit;margin-bottom:12px;color:var(--text);background:var(--surface);}
+  .gsync-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 20px;border-bottom:0.5px solid var(--border);flex-wrap:wrap;}
+  .gstatus{font-size:12px;color:var(--text-muted);}
+  .gstatus.connected{color:var(--green);font-weight:600;}
+  .gstatus.error{color:#b3261e;}
+  .mini-btn{border:1px solid var(--border-strong);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:12px;color:var(--text);cursor:pointer;font-family:inherit;}
+  .mini-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .gcfg-panel{padding:14px 20px;border-bottom:0.5px solid var(--border);background:var(--surface-alt);}
+  .gcfg-panel label{display:block;font-size:11.5px;color:var(--text-secondary);margin-bottom:4px;}
+  .gcfg-panel input[type="text"]{width:100%;padding:8px 10px;border:1px solid var(--border-strong);border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:10px;color:var(--text);background:var(--surface);}
+  .house-card{padding:16px 20px;border-bottom:0.5px solid var(--border);}
+  .house-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .house-toured{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-secondary);cursor:pointer;white-space:nowrap;order:2;}
+  .house-toured input{accent-color:var(--green);}
+  .house-address{margin:0;font-size:15px;font-weight:600;order:1;flex:1;}
+  .house-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+  .interest-good{background:var(--green-bg);color:var(--green);}
+  .interest-mid{background:var(--warning-bg);color:var(--warning);}
+  .interest-bad{background:#fbe9e7;color:#b3261e;}
+  .house-stats{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;}
+  .hstat{display:flex;flex-direction:column;}
+  .hstat-num{font-size:15px;font-weight:600;}
+  .hstat-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em;}
+  .house-notes{margin:12px 0 0;font-size:12.5px;color:var(--text-secondary);line-height:1.5;white-space:pre-line;}
+  .house-extra{margin-top:10px;display:flex;flex-direction:column;gap:2px;}
+  .house-extra span{font-size:11px;color:var(--text-muted);}
+  .house-links{display:flex;gap:8px;margin-top:12px;}
+  .house-link{font-size:12px;color:var(--accent);text-decoration:none;border:1px solid var(--accent-bg);background:var(--accent-bg);padding:5px 10px;border-radius:999px;}
 </style>
 </head>
 <body>
@@ -105,6 +133,7 @@
     <button class="tab-btn active" data-tab="checklist">Checklist</button>
     <button class="tab-btn" data-tab="timeline">Timeline</button>
     <button class="tab-btn" data-tab="countdown">Countdown</button>
+    <button class="tab-btn" data-tab="houses">Houses</button>
   </div>
 
   <div id="view-checklist">
@@ -144,7 +173,34 @@
     </div>
   </div>
 
-  <footer>Saved automatically in this browser. Nothing is sent anywhere.</footer>
+  <div id="view-houses" style="display:none;">
+    <div class="gsync-bar">
+      <span id="google-status" class="gstatus">Not connected</span>
+      <span>
+        <button class="mini-btn primary" id="connect-btn">Connect Google Sheet</button>
+        <button class="mini-btn" id="sync-btn" style="display:none;">Refresh</button>
+        <button class="mini-btn" id="disconnect-btn" style="display:none;">Disconnect</button>
+      </span>
+    </div>
+    <div class="gcfg-panel" id="gcfg-panel">
+      <label for="gcfg-client-id">Google OAuth client ID</label>
+      <input type="text" id="gcfg-client-id" placeholder="xxxxxxxx.apps.googleusercontent.com">
+      <label for="gcfg-sheet-id">Spreadsheet ID</label>
+      <input type="text" id="gcfg-sheet-id">
+      <div id="gcfg-origin-box" style="margin-bottom:10px;padding:8px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--border-strong);">
+        <span style="font-size:11.5px;color:var(--text-secondary);">This page's origin (register exactly this under "Authorized JavaScript origins" in Google Cloud Console):</span>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+          <code id="gcfg-origin-value" style="flex:1;font-size:12.5px;padding:6px 8px;background:var(--surface-alt);border-radius:6px;word-break:break-all;"></code>
+          <button type="button" class="mini-btn" id="gcfg-copy-origin" style="white-space:nowrap;">Copy</button>
+        </div>
+        <div id="gcfg-origin-warning" style="display:none;margin-top:6px;font-size:11.5px;color:var(--warning);"></div>
+      </div>
+      <p class="hint" style="margin:0;">See the README for how to get a client ID. Sync only works once this app is hosted online (GitHub Pages etc.) &mdash; it can't authenticate when opened as a local file. Your checklist is not affected if you skip this.</p>
+    </div>
+    <div id="houses-body"><p class="empty-state">Connect your Google Sheet to see your houses here.</p></div>
+  </div>
+
+  <footer>Saved automatically in this browser. Nothing is sent anywhere unless you connect Google Sheets.</footer>
 </div>
 
 <script>
@@ -297,14 +353,17 @@ function updateProgress(){
   document.getElementById("progress-text").textContent = count+" of "+total+" done";
 }
 
-function setChecked(order, checked){
+function setChecked(order, checked, skipPush){
   done[order] = checked;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(done));
   var row = document.querySelector('.task-row[data-order="'+order+'"]');
   if(row) row.classList.toggle("done", checked);
+  var checkbox = document.querySelector('.task-check[data-order="'+order+'"]');
+  if(checkbox) checkbox.checked = checked;
   var bar = document.querySelector('.tl-bar[data-order="'+order+'"]');
   if(bar) bar.classList.toggle("done", checked);
   updateProgress();
+  if(!skipPush) pushDoneToSheet(order, checked);
 }
 
 document.addEventListener("change", function(e){
@@ -316,7 +375,7 @@ document.addEventListener("change", function(e){
   }
 });
 
-var TAB_VIEWS = ["checklist","timeline","countdown"];
+var TAB_VIEWS = ["checklist","timeline","countdown","houses"];
 document.querySelectorAll(".tab-btn").forEach(function(btn){
   btn.addEventListener("click", function(){
     document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.remove("active"); });
@@ -399,6 +458,303 @@ renderCountdownForm();
 saveCountdown();
 tickCountdown();
 setInterval(tickCountdown, 1000);
+
+// ---------------------------------------------------------------- Google Sheets sync
+var CONFIG_KEY = "move_planner_google_config_v1";
+var DEFAULT_SPREADSHEET_ID = "1VBkY6ZD0ODqq5kAzB9X29JnS3t6OTl33A7widmDh9Q4";
+var DEFAULT_CLIENT_ID = "1064081143881-sh8rsd2si0tijlcnakke1nl87rh4ijla.apps.googleusercontent.com";
+var googleConfig = { clientId: DEFAULT_CLIENT_ID, spreadsheetId: DEFAULT_SPREADSHEET_ID };
+try{
+  var savedCfg = JSON.parse(localStorage.getItem(CONFIG_KEY));
+  if(savedCfg){ if(savedCfg.clientId) googleConfig.clientId = savedCfg.clientId; if(savedCfg.spreadsheetId) googleConfig.spreadsheetId = savedCfg.spreadsheetId; }
+}catch(e){}
+
+var accessToken = null;
+var tokenClient = null;
+var housesTable = null;
+var checklistRowBySheet = {};
+
+function saveGoogleConfig(){ localStorage.setItem(CONFIG_KEY, JSON.stringify(googleConfig)); }
+
+function gisReady(){ return typeof google !== "undefined" && google.accounts && google.accounts.oauth2; }
+
+function setConnectionStatus(connected, message){
+  var el = document.getElementById("google-status");
+  if(!el) return;
+  el.textContent = connected ? "Connected" : (message || "Not connected");
+  el.className = "gstatus" + (connected ? " connected" : (message ? " error" : ""));
+  document.getElementById("connect-btn").style.display = connected ? "none" : "inline-block";
+  document.getElementById("sync-btn").style.display = connected ? "inline-block" : "none";
+  document.getElementById("disconnect-btn").style.display = connected ? "inline-block" : "none";
+}
+
+function initTokenClientIfNeeded(){
+  if(!gisReady() || !googleConfig.clientId) return null;
+  if(tokenClient) return tokenClient;
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: googleConfig.clientId,
+    scope: "https://www.googleapis.com/auth/spreadsheets",
+    callback: function(resp){
+      if(resp && resp.access_token){
+        accessToken = resp.access_token;
+        syncFromSheet();
+      } else {
+        setConnectionStatus(false, "Connection was not granted.");
+      }
+    },
+    error_callback: function(){
+      setConnectionStatus(false, "Connection failed. Try again.");
+    }
+  });
+  return tokenClient;
+}
+
+function connectGoogle(){
+  googleConfig.clientId = document.getElementById("gcfg-client-id").value.trim();
+  googleConfig.spreadsheetId = document.getElementById("gcfg-sheet-id").value.trim() || DEFAULT_SPREADSHEET_ID;
+  saveGoogleConfig();
+  if(!googleConfig.clientId){
+    setConnectionStatus(false, "Paste your Google OAuth client ID first.");
+    return;
+  }
+  if(!gisReady()){
+    setConnectionStatus(false, "Google sign-in didn't load. Check your connection and that this page is hosted online.");
+    return;
+  }
+  var tc = initTokenClientIfNeeded();
+  setConnectionStatus(false, "Connecting…");
+  tc.requestAccessToken({ prompt: "consent" });
+}
+
+function disconnectGoogle(){
+  if(accessToken && gisReady() && google.accounts.oauth2.revoke){
+    google.accounts.oauth2.revoke(accessToken, function(){});
+  }
+  accessToken = null;
+  setConnectionStatus(false);
+}
+
+function sheetsFetch(path, options){
+  options = options || {};
+  options.headers = Object.assign({ "Authorization": "Bearer " + accessToken }, options.headers || {});
+  return fetch("https://sheets.googleapis.com/v4/spreadsheets/" + googleConfig.spreadsheetId + path, options)
+    .then(function(res){
+      if(!res.ok){
+        return res.json().catch(function(){ return {}; }).then(function(body){
+          throw new Error((body.error && body.error.message) || ("Request failed: " + res.status));
+        });
+      }
+      return res.json();
+    });
+}
+
+function colLetter(i){
+  var s = "", n = i + 1;
+  while(n > 0){
+    var m = (n - 1) % 26;
+    s = String.fromCharCode(65 + m) + s;
+    n = Math.floor((n - m) / 26);
+  }
+  return s;
+}
+
+function escapeHtml(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function parseSheetTable(values){
+  if(!values || !values.length) return { headers: [], rows: [] };
+  var headers = values[0];
+  var rows = [];
+  for(var r = 1; r < values.length; r++){
+    var srcRow = values[r];
+    if(!srcRow || !srcRow.length) continue;
+    var obj = { _row: r + 1 };
+    headers.forEach(function(h, i){ obj[i] = srcRow[i] !== undefined ? srcRow[i] : ""; });
+    rows.push(obj);
+  }
+  return { headers: headers, rows: rows };
+}
+
+function findCol(headers, patterns){
+  for(var i = 0; i < headers.length; i++){
+    var h = (headers[i] || "").toString().trim();
+    for(var p = 0; p < patterns.length; p++){
+      if(patterns[p].test(h)) return i;
+    }
+  }
+  return -1;
+}
+
+function isTruthy(v){
+  return v === true || v === "TRUE" || v === "true" || v === 1 || v === "1";
+}
+
+function syncFromSheet(){
+  document.getElementById("houses-body").innerHTML = '<p class="empty-state">Loading your houses…</p>';
+  sheetsFetch("/values:batchGet?ranges=Houses!A1:Z200&ranges=Checklist!A1:Z200&valueRenderOption=FORMATTED_VALUE")
+    .then(function(data){
+      var houses = parseSheetTable(data.valueRanges[0].values);
+      var checklist = parseSheetTable(data.valueRanges[1].values);
+      renderHouses(houses);
+      mergeChecklistFromSheet(checklist);
+      setConnectionStatus(true);
+    })
+    .catch(function(err){
+      setConnectionStatus(false, "Sync failed: " + err.message);
+    });
+}
+
+function renderHouses(table){
+  housesTable = table;
+  var headers = table.headers;
+  var iToured = findCol(headers,[/toured/i]);
+  var iInterest = findCol(headers,[/interest/i]);
+  var iPrice = findCol(headers,[/^price$/i]);
+  var iAddress = findCol(headers,[/address/i]);
+  var iCity = findCol(headers,[/^city$/i]);
+  var iType = findCol(headers,[/property type/i]);
+  var iBeds = findCol(headers,[/beds?/i]);
+  var iBaths = findCol(headers,[/baths?/i]);
+  var iSqft = findCol(headers,[/square footage|sqft|sq\s*ft/i]);
+  var iNotes = findCol(headers,[/notes/i]);
+  var iMls = findCol(headers,[/mls/i]);
+  var iZillow = findCol(headers,[/zillow/i]);
+  var known = [iToured,iInterest,iPrice,iAddress,iCity,iType,iBeds,iBaths,iSqft,iNotes,iMls,iZillow].filter(function(i){ return i>=0; });
+
+  if(!table.rows.length){
+    document.getElementById("houses-body").innerHTML = '<p class="empty-state">No houses in the sheet yet.</p>';
+    return;
+  }
+
+  var html = "";
+  table.rows.forEach(function(row){
+    var address = iAddress>=0 ? row[iAddress] : ("Row "+row._row);
+    var toured = iToured>=0 ? isTruthy(row[iToured]) : false;
+    var interest = iInterest>=0 ? (row[iInterest]||"") : "";
+    var interestClass = /love/i.test(interest) ? "interest-good" : /maybe/i.test(interest) ? "interest-mid" : /pass|no/i.test(interest) ? "interest-bad" : "";
+
+    html += '<div class="house-card">';
+    html += '<div class="house-head"><p class="house-address">'+escapeHtml(address||"Untitled")+'</p>'
+      + '<label class="house-toured"><input type="checkbox" class="toured-check" data-row="'+row._row+'"'+(toured?' checked':'')+'>Toured</label></div>';
+
+    html += '<div class="house-tags">';
+    if(interest) html += '<span class="tag '+interestClass+'">'+escapeHtml(interest)+'</span>';
+    if(iCity>=0 && row[iCity]) html += '<span class="tag">'+escapeHtml(row[iCity])+'</span>';
+    if(iType>=0 && row[iType]) html += '<span class="tag">'+escapeHtml(row[iType])+'</span>';
+    html += '</div>';
+
+    html += '<div class="house-stats">';
+    if(iPrice>=0 && row[iPrice]) html += '<div class="hstat"><span class="hstat-num">'+escapeHtml(row[iPrice])+'</span><span class="hstat-label">rent</span></div>';
+    if(iBeds>=0 && row[iBeds]!=="") html += '<div class="hstat"><span class="hstat-num">'+escapeHtml(row[iBeds])+'</span><span class="hstat-label">beds</span></div>';
+    if(iBaths>=0 && row[iBaths]!=="") html += '<div class="hstat"><span class="hstat-num">'+escapeHtml(row[iBaths])+'</span><span class="hstat-label">baths</span></div>';
+    if(iSqft>=0 && row[iSqft]) html += '<div class="hstat"><span class="hstat-num">'+escapeHtml(row[iSqft])+'</span><span class="hstat-label">size</span></div>';
+    html += '</div>';
+
+    if(iNotes>=0 && row[iNotes]) html += '<p class="house-notes">'+escapeHtml(row[iNotes])+'</p>';
+
+    var extra = headers.map(function(h,i){ return {h:h,i:i}; }).filter(function(o){
+      return known.indexOf(o.i)===-1 && o.h && o.h.toString().trim() && !/^helper$/i.test(o.h) && row[o.i];
+    });
+    if(extra.length){
+      html += '<div class="house-extra">'+extra.map(function(o){ return '<span>'+escapeHtml(o.h)+': '+escapeHtml(row[o.i])+'</span>'; }).join('')+'</div>';
+    }
+
+    var links = "";
+    if(iMls>=0 && row[iMls]) links += '<a class="house-link" href="'+row[iMls]+'" target="_blank" rel="noopener">MLS listing</a>';
+    if(iZillow>=0 && row[iZillow]) links += '<a class="house-link" href="'+row[iZillow]+'" target="_blank" rel="noopener">Zillow</a>';
+    if(links) html += '<div class="house-links">'+links+'</div>';
+
+    html += '</div>';
+  });
+
+  document.getElementById("houses-body").innerHTML = html;
+}
+
+function mergeChecklistFromSheet(table){
+  var headers = table.headers;
+  var iDone = findCol(headers,[/^done$/i]);
+  var iOrder = findCol(headers,[/^order$/i]);
+  if(iDone<0 || iOrder<0) return;
+  table.rows.forEach(function(row){
+    var order = parseInt(row[iOrder],10);
+    if(!order) return;
+    checklistRowBySheet[order] = row._row;
+    setChecked(order, isTruthy(row[iDone]), true);
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(done));
+}
+
+function pushDoneToSheet(order, checked){
+  if(!accessToken) return;
+  var row = checklistRowBySheet[order] || (parseInt(order,10) + 1);
+  sheetsFetch("/values/Checklist!A"+row+"?valueInputOption=USER_ENTERED", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ values: [[ checked ]] })
+  }).catch(function(err){ console.warn("Failed to write checklist to sheet:", err.message); });
+}
+
+function pushTouredToSheet(row, checked){
+  if(!accessToken || !housesTable) return;
+  var iToured = findCol(housesTable.headers,[/toured/i]);
+  if(iToured<0) return;
+  sheetsFetch("/values/Houses!"+colLetter(iToured)+row+"?valueInputOption=USER_ENTERED", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ values: [[ checked ]] })
+  }).catch(function(err){ console.warn("Failed to write houses to sheet:", err.message); });
+}
+
+document.getElementById("gcfg-sheet-id").value = googleConfig.spreadsheetId;
+document.getElementById("gcfg-client-id").value = googleConfig.clientId;
+
+(function initOriginHint(){
+  var origin = window.location.origin;
+  var isFile = window.location.protocol === "file:";
+  var valueEl = document.getElementById("gcfg-origin-value");
+  var warnEl = document.getElementById("gcfg-origin-warning");
+  if(valueEl) valueEl.textContent = isFile ? "(none \u2014 you're opening this as a local file)" : origin;
+  if(warnEl){
+    if(isFile){
+      warnEl.textContent = "Google sign-in can't work from a local file. Host this on GitHub Pages (or similar) first, then open it from that https:// URL.";
+      warnEl.style.display = "block";
+    } else if(window.location.protocol !== "https:"){
+      warnEl.textContent = "This page is served over http, not https. Google's OAuth client usually requires https \u2014 use your https GitHub Pages URL instead.";
+      warnEl.style.display = "block";
+    } else {
+      warnEl.style.display = "none";
+    }
+  }
+  var copyBtn = document.getElementById("gcfg-copy-origin");
+  if(copyBtn){
+    copyBtn.addEventListener("click", function(){
+      if(isFile) return;
+      var text = origin;
+      var done = function(){
+        var old = copyBtn.textContent;
+        copyBtn.textContent = "Copied!";
+        setTimeout(function(){ copyBtn.textContent = old; }, 1500);
+      };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done).catch(function(){
+          window.prompt("Copy this origin:", text);
+        });
+      } else {
+        window.prompt("Copy this origin:", text);
+      }
+    });
+  }
+})();
+
+document.getElementById("connect-btn").addEventListener("click", connectGoogle);
+document.getElementById("sync-btn").addEventListener("click", syncFromSheet);
+document.getElementById("disconnect-btn").addEventListener("click", disconnectGoogle);
+document.addEventListener("change", function(e){
+  if(e.target.classList.contains("toured-check")){
+    pushTouredToSheet(e.target.getAttribute("data-row"), e.target.checked);
+  }
+});
 
 document.getElementById("reset-btn").addEventListener("click", function(){
   if(!confirm("Uncheck everything?")) return;
