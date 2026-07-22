@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Move planner</title>
+<style>
+  :root{
+    --bg:#f4f4f2;
+    --surface:#ffffff;
+    --surface-alt:#f2f3f1;
+    --border:#e2e2de;
+    --border-strong:#cfcfca;
+    --text:#1c1c1a;
+    --text-secondary:#6b6b65;
+    --text-muted:#98988f;
+    --green:#3f7d55;
+    --green-bg:#e8f2ea;
+    --accent:#1f5f9c;
+    --accent-bg:#e6f1fb;
+    --warning:#8a5a12;
+    --warning-bg:#faeeda;
+    --today:#1f5f9c;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--surface);box-shadow:0 0 0 1px var(--border);}
+  header{padding:20px 20px 14px;border-bottom:0.5px solid var(--border);}
+  header h1{margin:0;font-size:19px;font-weight:600;}
+  header p{margin:3px 0 14px;font-size:13px;color:var(--text-secondary);}
+  .progress-track{height:7px;background:var(--surface-alt);border-radius:4px;overflow:hidden;}
+  .progress-fill{height:100%;width:0%;background:var(--green);border-radius:4px;transition:width .2s ease;}
+  .progress-row{display:flex;align-items:center;justify-content:space-between;margin-top:7px;}
+  .progress-text{font-size:12.5px;color:var(--text-secondary);}
+  .reset-btn{border:none;background:none;font-size:12.5px;color:var(--accent);cursor:pointer;padding:0;}
+  .tabs{display:flex;gap:4px;margin:14px 20px;background:var(--surface-alt);border-radius:10px;padding:3px;}
+  .tab-btn{flex:1;border:none;background:transparent;padding:9px 0;font-size:13.5px;color:var(--text-secondary);border-radius:8px;cursor:pointer;font-family:inherit;}
+  .tab-btn.active{background:var(--surface);color:var(--text);font-weight:600;box-shadow:0 0 0 1px var(--border);}
+  .toolbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px 8px;}
+  .toolbar label{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-secondary);cursor:pointer;}
+  .section-label{display:flex;align-items:center;gap:7px;padding:16px 20px 6px;font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.03em;}
+  .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .task-row{display:flex;gap:12px;padding:12px 20px;border-bottom:0.5px solid var(--border);align-items:flex-start;}
+  .task-row.done .task-title{text-decoration:line-through;color:var(--text-muted);}
+  .task-row.done .task-note,.task-row.done .tag-row{opacity:.5;}
+  .hide-done .task-row.done{display:none;}
+  .task-check{width:19px;height:19px;flex-shrink:0;accent-color:var(--green);margin-top:1px;cursor:pointer;}
+  .task-title{margin:0;font-size:14.5px;font-weight:500;}
+  .tag-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+  .tag{font-size:10.5px;padding:2px 8px;border-radius:999px;background:var(--surface-alt);color:var(--text-secondary);white-space:nowrap;}
+  .task-note{margin:6px 0 0;font-size:11.5px;color:var(--text-muted);line-height:1.4;}
+  .empty-state{padding:40px 20px;text-align:center;color:var(--text-muted);font-size:13px;}
+  #view-timeline{padding-bottom:16px;}
+  .tl-scroll{overflow-x:auto;padding:0 20px 8px;-webkit-overflow-scrolling:touch;}
+  .tl-inner{position:relative;}
+  .tl-gridline{position:absolute;top:0;bottom:0;width:1px;background:var(--border);}
+  .tl-axis-row{display:flex;align-items:center;gap:10px;padding-bottom:6px;}
+  .tl-label{width:108px;flex-shrink:0;position:sticky;left:0;background:var(--surface);z-index:1;font-size:11px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;border-right:0.5px solid var(--border);}
+  .tl-section-row{display:flex;align-items:center;gap:10px;padding:10px 0 2px;}
+  .tl-section-label{width:108px;flex-shrink:0;position:sticky;left:0;background:var(--surface);z-index:1;font-size:11px;font-weight:600;color:var(--text-secondary);display:flex;align-items:center;gap:6px;}
+  .tl-row{display:flex;align-items:center;gap:10px;padding:6px 0;}
+  .tl-track{height:14px;background:var(--surface-alt);border-radius:4px;position:relative;flex-shrink:0;}
+  .tl-bar{position:absolute;top:0;height:100%;border-radius:4px;background:var(--text-muted);}
+  .tl-bar.done{background:var(--green);}
+  .tl-legend{display:flex;gap:14px;padding:10px 20px 0;font-size:11px;color:var(--text-secondary);}
+  .tl-legend span{display:inline-flex;align-items:center;}
+  .tl-legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;}
+  .hint{margin:6px 20px 0;font-size:10.5px;color:var(--text-muted);}
+  footer{padding:16px 20px 28px;text-align:center;font-size:11px;color:var(--text-muted);}
+  .countdown-wrap{padding:28px 20px 8px;text-align:center;}
+  .cd-grid{display:flex;justify-content:center;gap:10px;margin-bottom:6px;}
+  .cd-box{background:var(--surface-alt);border-radius:10px;padding:14px 8px;min-width:62px;}
+  .cd-num{display:block;font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .cd-unit{display:block;font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+  .cd-arrived{font-size:17px;font-weight:600;color:var(--green);padding:24px 0 16px;}
+  .cd-target{font-size:12.5px;color:var(--text-secondary);margin:14px 0 0;}
+  .cd-presets{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:18px 20px;}
+  .preset-btn{border:1px solid var(--border-strong);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:12px;color:var(--text);cursor:pointer;font-family:inherit;}
+  .preset-btn.active{background:var(--accent-bg);border-color:var(--accent);color:var(--accent);}
+  .cd-form{padding:4px 20px 24px;border-top:0.5px solid var(--border);margin-top:8px;padding-top:18px;}
+  .cd-form label{display:block;font-size:12px;color:var(--text-secondary);margin-bottom:5px;}
+  .cd-form input[type="text"],.cd-form input[type="date"]{width:100%;padding:9px 10px;border:1px solid var(--border-strong);border-radius:8px;font-size:14px;font-family:inherit;margin-bottom:12px;color:var(--text);background:var(--surface);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <h1>Move to house</h1>
+    <p>Jul 21 &rarr; Sep 26, 2026</p>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="progress-row">
+      <span class="progress-text" id="progress-text">0 of 32 done</span>
+      <button class="reset-btn" id="reset-btn">Reset all</button>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="checklist">Checklist</button>
+    <button class="tab-btn" data-tab="timeline">Timeline</button>
+    <button class="tab-btn" data-tab="countdown">Countdown</button>
+  </div>
+
+  <div id="view-checklist">
+    <div class="toolbar">
+      <label><input type="checkbox" id="hide-done-toggle"> Hide done</label>
+      <span></span>
+    </div>
+    <div id="checklist-body"></div>
+  </div>
+
+  <div id="view-timeline" style="display:none;">
+    <div class="tl-scroll">
+      <div class="tl-inner" id="tl-inner"></div>
+    </div>
+    <p class="hint">Scroll to see the full date range &rarr;</p>
+    <div class="tl-legend">
+      <span><i style="background:var(--text-muted);"></i>Pending</span>
+      <span><i style="background:var(--green);"></i>Done</span>
+    </div>
+  </div>
+
+  <div id="view-countdown" style="display:none;">
+    <div class="countdown-wrap">
+      <div class="cd-grid" id="cd-grid"></div>
+      <p class="cd-target" id="cd-target"></p>
+    </div>
+    <div class="cd-presets" id="cd-presets">
+      <button class="preset-btn" data-date="2026-08-14" data-label="Keys day">Keys day &middot; Aug 14</button>
+      <button class="preset-btn" data-date="2026-08-22" data-label="Move-in weekend">Move-in weekend &middot; Aug 22</button>
+      <button class="preset-btn" data-date="2026-09-26" data-label="Out of the apartment">Out of the apartment &middot; Sep 26</button>
+    </div>
+    <div class="cd-form">
+      <label for="countdown-label">Counting down to</label>
+      <input type="text" id="countdown-label" placeholder="What are you counting down to?">
+      <label for="countdown-date">Date</label>
+      <input type="date" id="countdown-date">
+    </div>
+  </div>
+
+  <footer>Saved automatically in this browser. Nothing is sent anywhere.</footer>
+</div>
+
+<script>
+var TASKS = [
+  {o:1,track:"Prep",window:"Now–Aug 13",task:"Reserve rental truck",method:"-",note:"Book for the Aug 22-31 move-in weekend. Covers couch, bed, dresser.",start:"2026-07-21",end:"2026-07-25"},
+  {o:2,track:"Prep",window:"Now–Aug 13",task:"Rent new storage unit near new place",method:"-",note:"Size for combined inventory plus wood. Confirm access hours.",start:"2026-07-21",end:"2026-07-28"},
+  {o:3,track:"Prep",window:"Now–Aug 13",task:"Pull empty bins from Unit A",method:"Frontier",note:"Use to pack the apartment.",start:"2026-07-26",end:"2026-08-02"},
+  {o:4,track:"Prep",window:"Now–Aug 13",task:"Packing supplies top-up",method:"Frontier",note:"Boxes, tape, wrap, blankets, straps.",start:"2026-07-26",end:"2026-08-02"},
+  {o:5,track:"Prep",window:"Now–Aug 13",task:"Pack non-essentials",method:"-",note:"Books, decor, off-season clothes, spare linens.",start:"2026-07-28",end:"2026-08-13"},
+  {o:6,track:"Prep",window:"Now–Aug 13",task:"Measure furniture and doorways",method:"-",note:"Couch, dresser, mattress against house doors.",start:"2026-07-21",end:"2026-07-23"},
+  {o:7,track:"Prep",window:"Now–Aug 13",task:"Utilities at house",method:"-",note:"Electric, water, gas effective the keys date.",start:"2026-08-01",end:"2026-08-13"},
+  {o:8,track:"Prep",window:"Now–Aug 13",task:"Internet install scheduled",method:"-",note:"Book for keys week. Work-from-home priority.",start:"2026-08-01",end:"2026-08-13"},
+  {o:9,track:"Prep",window:"Now–Aug 13",task:"Change of address and insurance",method:"-",note:"USPS, bank, business, subscriptions.",start:"2026-08-01",end:"2026-08-13"},
+  {o:10,track:"House",window:"Aug 14-21",task:"Confirm utilities and internet live",method:"-",note:"Before you move in to live.",start:"2026-08-14",end:"2026-08-21"},
+  {o:11,track:"House",window:"Aug 14-21",task:"Prep and clean house rooms",method:"-",note:"Do this before furniture lands.",start:"2026-08-14",end:"2026-08-21"},
+  {o:12,track:"House",window:"Aug 14-21",task:"Power tools and heavy garage gear",method:"Frontier",note:"Multiple trips. To house garage.",start:"2026-08-14",end:"2026-08-21"},
+  {o:13,track:"House",window:"Aug 14-21",task:"Garage shelves and pegboard",method:"Frontier",note:"Unmount, patch the wall. To house garage.",start:"2026-08-19",end:"2026-08-21"},
+  {o:14,track:"House",window:"Aug 22-31",task:"Couch",method:"Rental",note:"Get a hand.",start:"2026-08-22",end:"2026-08-23"},
+  {o:15,track:"House",window:"Aug 22-31",task:"Mattress bed frame and bedding",method:"Rental",note:"Make up the bed same day. You sleep here that night.",start:"2026-08-22",end:"2026-08-23"},
+  {o:16,track:"House",window:"Aug 22-31",task:"Dresser bookshelf TV stand coffee table",method:"Rental",note:"-",start:"2026-08-22",end:"2026-08-23"},
+  {o:17,track:"House",window:"Aug 22-31",task:"TV",method:"Rental or Frontier",note:"Blanket-wrap, screen upright.",start:"2026-08-22",end:"2026-08-24"},
+  {o:18,track:"House",window:"Aug 22-31",task:"Daily kitchen kit and fridge freezer food",method:"Frontier",note:"Coolers for the food.",start:"2026-08-24",end:"2026-08-31"},
+  {o:19,track:"House",window:"Aug 22-31",task:"Bathroom essentials towels toiletries",method:"Frontier",note:"-",start:"2026-08-24",end:"2026-08-31"},
+  {o:20,track:"House",window:"Aug 22-31",task:"Current clothes",method:"Frontier",note:"-",start:"2026-08-24",end:"2026-08-31"},
+  {o:21,track:"House",window:"Aug 22-31",task:"Indoor plants",method:"Frontier cab",note:"Cab only. Direct trips. No hot vehicle.",start:"2026-08-29",end:"2026-08-31"},
+  {o:22,track:"House",window:"Aug 22-31",task:"Waffles and all dog beds",method:"Frontier",note:"You live here now.",start:"2026-08-29",end:"2026-08-31"},
+  {o:23,track:"House",window:"Sep 1-26",task:"Patio furniture",method:"Frontier",note:"Trickle.",start:"2026-09-01",end:"2026-09-15"},
+  {o:24,track:"House",window:"Sep 1-26",task:"Books decor wall art lamps",method:"Frontier",note:"Trickle.",start:"2026-09-01",end:"2026-09-20"},
+  {o:25,track:"House",window:"Sep 1-26",task:"Secondary kitchen",method:"Frontier",note:"Extra dishes, appliances, pantry.",start:"2026-09-01",end:"2026-09-20"},
+  {o:26,track:"House",window:"Sep 1-26",task:"Off-season clothes and spare electronics",method:"Frontier",note:"Trickle.",start:"2026-09-01",end:"2026-09-20"},
+  {o:27,track:"Storage",window:"Sep 1-26",task:"Etsy inventory Unit A to new unit",method:"Frontier",note:"Bin and label by product line.",start:"2026-09-01",end:"2026-09-15"},
+  {o:28,track:"Storage",window:"Sep 1-26",task:"Tools Unit A to house garage",method:"Frontier",note:"Reunites with shelves and pegboard.",start:"2026-09-01",end:"2026-09-15"},
+  {o:29,track:"Storage",window:"Sep 1-26",task:"Wood inventory Unit B to new unit",method:"Own rental or Frontier",note:"Heavy. Stack by species and thickness.",start:"2026-09-06",end:"2026-09-20"},
+  {o:30,track:"Storage",window:"Sep 1-26",task:"Close out Units A and B",method:"-",note:"Photos, sweep, stop billing. Check notice periods.",start:"2026-09-20",end:"2026-09-24"},
+  {o:31,track:"Mom's",window:"Sep coordinate",task:"Dining table and lawn equipment",method:"Frontier or rental",note:"Pick a date with your mom.",start:"2026-09-12",end:"2026-09-13"},
+  {o:32,track:"House",window:"By Sep 26",task:"Final apartment clean patch photos keys",method:"-",note:"Keep a toolkit and cleaning supplies here through Sept.",start:"2026-09-22",end:"2026-09-26"}
+];
+
+var TRACK_COLORS = {
+  "Prep":{bg:"#EEEDFE",fg:"#26215C",dot:"#7F77DD"},
+  "House":{bg:"#E1F5EE",fg:"#04342C",dot:"#1D9E75"},
+  "Storage":{bg:"#FAECE7",fg:"#4A1B0C",dot:"#D85A30"},
+  "Mom's":{bg:"#FBEAF0",fg:"#4B1528",dot:"#D4537E"}
+};
+
+var STORAGE_KEY = "move_planner_done_v1";
+var done = {};
+try{ done = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }catch(e){ done = {}; }
+
+function methodTag(method){
+  if(!method || method === "-") return "";
+  var hasFrontier = /frontier/i.test(method);
+  var hasRental = /rental/i.test(method);
+  var bg, fg, border = "";
+  if(hasFrontier && hasRental){ bg="var(--surface-alt)"; fg="var(--text-secondary)"; border="border:1px dashed var(--border-strong);"; }
+  else if(hasFrontier){ bg="var(--accent-bg)"; fg="var(--accent)"; }
+  else if(hasRental){ bg="var(--warning-bg)"; fg="var(--warning)"; }
+  else { bg="var(--surface-alt)"; fg="var(--text-secondary)"; }
+  return '<span class="tag" style="background:'+bg+';color:'+fg+';'+border+'">'+method+'</span>';
+}
+
+function groupByTrack(tasks){
+  var order = [], map = {};
+  tasks.forEach(function(t){
+    if(!map[t.track]){ map[t.track]=[]; order.push(t.track); }
+    map[t.track].push(t);
+  });
+  return order.map(function(track){ return {track:track, items:map[track]}; });
+}
+
+function renderChecklist(){
+  var groups = groupByTrack(TASKS);
+  var html = "";
+  groups.forEach(function(g){
+    var c = TRACK_COLORS[g.track] || {bg:"var(--surface-alt)",fg:"var(--text-secondary)",dot:"var(--text-muted)"};
+    html += '<div class="section-label"><span class="dot" style="background:'+c.dot+'"></span>'+g.track+'</div>';
+    g.items.forEach(function(t){
+      var isDone = !!done[t.o];
+      html += '<div class="task-row'+(isDone?' done':'')+'" data-order="'+t.o+'">'
+        + '<input type="checkbox" class="task-check" data-order="'+t.o+'"'+(isDone?' checked':'')+'>'
+        + '<div style="flex:1;min-width:0;">'
+        + '<p class="task-title">'+t.task+'</p>'
+        + '<div class="tag-row"><span class="tag" style="background:'+c.bg+';color:'+c.fg+';">'+g.track+'</span><span class="tag">'+t.window+'</span>'+methodTag(t.method)+'</div>'
+        + (t.note && t.note !== "-" ? '<p class="task-note">'+t.note+'</p>' : '')
+        + '</div></div>';
+    });
+  });
+  document.getElementById("checklist-body").innerHTML = html;
+}
+
+var RANGE_START = new Date(2026,6,21);
+var RANGE_END = new Date(2026,8,26);
+var PX_PER_DAY = 12;
+var MS_DAY = 86400000;
+function dayOffset(dateStr){
+  var d = new Date(dateStr+"T00:00:00");
+  return Math.round((d - RANGE_START) / MS_DAY);
+}
+var TOTAL_DAYS = dayOffset("2026-09-26");
+var TL_WIDTH = TOTAL_DAYS * PX_PER_DAY;
+
+function shortLabel(task){
+  var t = task.task;
+  return t.length > 20 ? t.slice(0,19)+"…" : t;
+}
+
+function renderTimeline(){
+  var groups = groupByTrack(TASKS);
+  var weeks = [];
+  for(var d=0; d<=TOTAL_DAYS; d+=7){ weeks.push(d); }
+  if(weeks[weeks.length-1] !== TOTAL_DAYS) weeks.push(TOTAL_DAYS);
+
+  var html = "";
+  weeks.forEach(function(d){
+    html += '<div class="tl-gridline" style="left:'+(108+10+d*PX_PER_DAY)+'px;'+(d===0?'background:var(--today);':'')+'"></div>';
+  });
+
+  html += '<div class="tl-axis-row"><div class="tl-label" style="border-right:none;background:transparent;"></div><div style="width:'+TL_WIDTH+'px;flex-shrink:0;position:relative;height:14px;">';
+  weeks.forEach(function(d){
+    var dt = new Date(RANGE_START.getTime() + d*MS_DAY);
+    var lbl = dt.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+    var isToday = d===0;
+    var isLast = d===TOTAL_DAYS;
+    var transform = isToday ? "translateX(0%)" : (isLast ? "translateX(-85%)" : "translateX(-50%)");
+    html += '<span style="position:absolute;left:'+(d*PX_PER_DAY)+'px;transform:'+transform+';font-size:10.5px;color:'+(isToday?'var(--today)':'var(--text-muted)')+';font-weight:'+(isToday?'600':'400')+';">'+(isToday?"Today":lbl)+'</span>';
+  });
+  html += '</div></div>';
+
+  groups.forEach(function(g){
+    var c = TRACK_COLORS[g.track] || {dot:"var(--text-muted)"};
+    html += '<div class="tl-section-row"><div class="tl-section-label"><span class="dot" style="background:'+c.dot+'"></span>'+g.track+'</div><div style="width:'+TL_WIDTH+'px;flex-shrink:0;"></div></div>';
+    g.items.forEach(function(t){
+      var left = dayOffset(t.start) * PX_PER_DAY;
+      var width = Math.max(dayOffset(t.end)*PX_PER_DAY - left, 4);
+      var isDone = !!done[t.o];
+      html += '<div class="tl-row"><div class="tl-label">'+shortLabel(t)+'</div>'
+        + '<div class="tl-track" style="width:'+TL_WIDTH+'px;">'
+        + '<div class="tl-bar'+(isDone?' done':'')+'" data-order="'+t.o+'" style="left:'+left+'px;width:'+width+'px;"></div>'
+        + '</div></div>';
+    });
+  });
+
+  document.getElementById("tl-inner").innerHTML = html;
+}
+
+function updateProgress(){
+  var total = TASKS.length;
+  var count = Object.keys(done).filter(function(k){ return done[k]; }).length;
+  document.getElementById("progress-fill").style.width = (count/total*100)+"%";
+  document.getElementById("progress-text").textContent = count+" of "+total+" done";
+}
+
+function setChecked(order, checked){
+  done[order] = checked;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(done));
+  var row = document.querySelector('.task-row[data-order="'+order+'"]');
+  if(row) row.classList.toggle("done", checked);
+  var bar = document.querySelector('.tl-bar[data-order="'+order+'"]');
+  if(bar) bar.classList.toggle("done", checked);
+  updateProgress();
+}
+
+document.addEventListener("change", function(e){
+  if(e.target.classList.contains("task-check")){
+    setChecked(e.target.getAttribute("data-order"), e.target.checked);
+  }
+  if(e.target.id === "hide-done-toggle"){
+    document.getElementById("checklist-body").parentElement.classList.toggle("hide-done", e.target.checked);
+  }
+});
+
+var TAB_VIEWS = ["checklist","timeline","countdown"];
+document.querySelectorAll(".tab-btn").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.remove("active"); });
+    btn.classList.add("active");
+    var tab = btn.getAttribute("data-tab");
+    TAB_VIEWS.forEach(function(v){
+      document.getElementById("view-"+v).style.display = (v===tab) ? "block" : "none";
+    });
+  });
+});
+
+var COUNTDOWN_KEY = "move_planner_countdown_v1";
+var countdown;
+try{ countdown = JSON.parse(localStorage.getItem(COUNTDOWN_KEY)); }catch(e){ countdown = null; }
+if(!countdown || !countdown.date){ countdown = { date:"2026-09-26", label:"Out of the apartment" }; }
+
+function pad2(n){ return n < 10 ? "0"+n : ""+n; }
+
+function saveCountdown(){
+  localStorage.setItem(COUNTDOWN_KEY, JSON.stringify(countdown));
+  document.querySelectorAll(".preset-btn").forEach(function(b){
+    b.classList.toggle("active", b.getAttribute("data-date")===countdown.date && b.getAttribute("data-label")===countdown.label);
+  });
+}
+
+function renderCountdownForm(){
+  document.getElementById("countdown-date").value = countdown.date;
+  document.getElementById("countdown-label").value = countdown.label;
+}
+
+function tickCountdown(){
+  var target = new Date(countdown.date+"T00:00:00");
+  var now = new Date();
+  var diff = target - now;
+  var grid = document.getElementById("cd-grid");
+  var targetLabel = document.getElementById("cd-target");
+  var dateStr = target.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+
+  if(diff <= 0){
+    grid.innerHTML = '<div class="cd-arrived">'+(countdown.label || "It")+' is here</div>';
+    targetLabel.textContent = dateStr;
+    return;
+  }
+
+  var totalSeconds = Math.floor(diff/1000);
+  var days = Math.floor(totalSeconds/86400);
+  var hours = Math.floor((totalSeconds%86400)/3600);
+  var minutes = Math.floor((totalSeconds%3600)/60);
+  var seconds = totalSeconds%60;
+
+  grid.innerHTML =
+    '<div class="cd-box"><span class="cd-num">'+days+'</span><span class="cd-unit">days</span></div>'
+    +'<div class="cd-box"><span class="cd-num">'+pad2(hours)+'</span><span class="cd-unit">hrs</span></div>'
+    +'<div class="cd-box"><span class="cd-num">'+pad2(minutes)+'</span><span class="cd-unit">min</span></div>'
+    +'<div class="cd-box"><span class="cd-num">'+pad2(seconds)+'</span><span class="cd-unit">sec</span></div>';
+  targetLabel.textContent = (countdown.label ? countdown.label+" — " : "")+dateStr;
+}
+
+document.querySelectorAll(".preset-btn").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    countdown = { date: btn.getAttribute("data-date"), label: btn.getAttribute("data-label") };
+    saveCountdown();
+    renderCountdownForm();
+    tickCountdown();
+  });
+});
+
+document.getElementById("countdown-date").addEventListener("change", function(e){
+  countdown.date = e.target.value || countdown.date;
+  saveCountdown();
+  tickCountdown();
+});
+document.getElementById("countdown-label").addEventListener("input", function(e){
+  countdown.label = e.target.value;
+  saveCountdown();
+  tickCountdown();
+});
+
+renderCountdownForm();
+saveCountdown();
+tickCountdown();
+setInterval(tickCountdown, 1000);
+
+document.getElementById("reset-btn").addEventListener("click", function(){
+  if(!confirm("Uncheck everything?")) return;
+  done = {};
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(done));
+  renderChecklist();
+  renderTimeline();
+  updateProgress();
+});
+
+renderChecklist();
+renderTimeline();
+updateProgress();
+</script>
+</body>
+</html>
