@@ -10,14 +10,18 @@ Sheets if you connect it.
 ## Deploy with GitHub Pages
 
 1. Create a new repository on GitHub (public, for the free Pages tier).
-2. Upload `index.html` from this folder to the repo (drag and drop on
-   github.com works fine, or `git add` / `git commit` / `git push`).
+2. Upload **all the files in this folder** to the repo — `index.html`
+   plus the icon files (`icon-192.png`, `icon-512.png`,
+   `apple-touch-icon.png`, `manifest.webmanifest`). Drag and drop on
+   github.com works fine, or `git add` / `git commit` / `git push`. They
+   need to sit next to `index.html` (same folder) for the icons to load.
 3. In the repo, go to Settings -> Pages.
 4. Under "Build and deployment", set Source to "Deploy from a branch",
    branch to `main` (or `master`), folder to `/ (root)`, then Save.
 5. GitHub gives you a URL like `https://alexbuildswood.github.io/<repo>/`
    within a minute or two. Open it on your phone and add it to your
-   home screen for an app-like icon.
+   home screen — it'll use the checklist/moving-box icon and open in its
+   own window like an app.
 
 No build step, no server, no dependencies to install.
 
