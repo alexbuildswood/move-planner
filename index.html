@@ -103,6 +103,9 @@
   .gcfg-panel label{display:block;font-size:11.5px;color:var(--text-secondary);margin-bottom:4px;}
   .gcfg-panel input[type="text"]{width:100%;padding:8px 10px;border:1px solid var(--border-strong);border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:10px;color:var(--text);background:var(--surface);}
   .house-card{padding:16px 20px;border-bottom:0.5px solid var(--border);}
+  .house-card.house-passed{opacity:.5;}
+  .house-card.house-passed .house-address{text-decoration:line-through;color:var(--text-muted);}
+  .house-card.house-passed .hstat-num{text-decoration:line-through;}
   .house-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
   .house-toured{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-secondary);cursor:pointer;white-space:nowrap;order:2;}
   .house-toured input{accent-color:var(--green);}
@@ -605,7 +608,7 @@ function isTruthy(v){
 
 function syncFromSheet(){
   document.getElementById("houses-body").innerHTML = '<p class="empty-state">Loading your houses…</p>';
-  sheetsFetch("/values:batchGet?ranges=Houses!A1:Z200&ranges=Checklist!A1:Z200&valueRenderOption=FORMATTED_VALUE")
+  sheetsFetch("/values:batchGet?ranges=Houses!A1:AZ500&ranges=Checklist!A1:Z200&valueRenderOption=FORMATTED_VALUE")
     .then(function(data){
       var houses = parseSheetTable(data.valueRanges[0].values);
       var checklist = parseSheetTable(data.valueRanges[1].values);
@@ -645,14 +648,28 @@ function renderHouses(table){
     return;
   }
 
+  // Decision priority: undecided/blank first, then yes, then no last.
+  function decisionRank(v){
+    var s = (v||"").toString().trim().toLowerCase();
+    if(!s || /^maybe/.test(s)) return 0;
+    if(/^(yes|love|interested)/.test(s)) return 1;
+    if(/^(no|pass|decline)/.test(s)) return 2;
+    return 0;
+  }
+  var rows = table.rows.slice();
+  if(iInterest>=0){
+    rows.sort(function(a,b){ return decisionRank(a[iInterest]) - decisionRank(b[iInterest]); });
+  }
+
   var html = "";
-  table.rows.forEach(function(row){
+  rows.forEach(function(row){
     var address = iAddress>=0 ? row[iAddress] : ("Row "+row._row);
     var toured = iToured>=0 ? isTruthy(row[iToured]) : false;
     var interest = iInterest>=0 ? (row[iInterest]||"") : "";
-    var interestClass = /love/i.test(interest) ? "interest-good" : /maybe/i.test(interest) ? "interest-mid" : /pass|no/i.test(interest) ? "interest-bad" : "";
+    var interestClass = /love|yes|interested/i.test(interest) ? "interest-good" : /maybe/i.test(interest) ? "interest-mid" : /pass|no/i.test(interest) ? "interest-bad" : "";
+    var isPassed = iInterest>=0 && decisionRank(interest) === 2;
 
-    html += '<div class="house-card">';
+    html += '<div class="house-card'+(isPassed ? ' house-passed' : '')+'">';
     html += '<div class="house-head"><p class="house-address">'+escapeHtml(address||"Untitled")+'</p>'
       + '<label class="house-toured"><input type="checkbox" class="toured-check" data-row="'+row._row+'"'+(toured?' checked':'')+'>Toured</label></div>';
 
