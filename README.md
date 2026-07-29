@@ -59,9 +59,26 @@ project — that sounds heavier than it is; it's about 10 minutes.
 6. Open the app, go to the Houses tab, paste that Client ID into the
    "Google OAuth client ID" field, and click **Connect Google Sheet**.
    Sign in and approve access when prompted.
-7. Make sure your Google Sheet has a tab named exactly `Houses` and a
-   tab named exactly `Checklist` with a `Done` and `Order` column — the
-   app matches checklist rows by Order number.
+7. Make sure your Google Sheet has these tabs, named **exactly** as
+   below (capitalization and spacing matter — the app looks them up by
+   name):
+   - `To View` — houses you haven't decided on yet. Shows in the app's
+     "To View" sub-tab, fully interactive.
+   - `No Decision` — houses you've passed on. Shows in the "No"
+     sub-tab, and every card there is automatically greyed out and
+     struck through.
+   - `Yes Decision` — houses you're pursuing. Shows in the "Yes"
+     sub-tab.
+   - `Checklist` — with a `Done` and `Order` column; the app matches
+     checklist rows by Order number.
+
+   Each of the three house tabs can have its own set of columns — the
+   app reads whatever headers are actually there on row 1 and figures
+   out Address/Price/City/MLS Link/Zillow Link/Toured?/Interest/Notes/
+   Live Notes automatically by name (case-insensitive). Any column it
+   doesn't recognize still shows on the card as a plain label/value
+   line, so new columns you add always show up without needing an app
+   update.
 
 Notes:
 - The Spreadsheet ID field is pre-filled with your Move_Plan sheet; only
@@ -69,6 +86,10 @@ Notes:
 - You'll need to click Connect again each time you open the app in a
   new browser session — the sign-in isn't kept forever, only your
   Client ID and Spreadsheet ID are remembered.
-- Checking a box in the app writes back to the sheet, and checking a
-  box in the sheet shows up in the app next time you connect or hit
-  Refresh. Unlabeled or "helper" columns in your sheet are ignored.
+- Checking a box in the app writes back to whichever of the three tabs
+  that house lives in, and checking a box in the sheet shows up in the
+  app next time you connect or hit Refresh. Same for Live Notes.
+  Unlabeled or "helper" columns in your sheet are ignored.
+- Moving a house between "To View," "No Decision," and "Yes Decision"
+  is done by cutting/pasting its row into the other tab in Google
+  Sheets itself — the app doesn't move rows between tabs for you.

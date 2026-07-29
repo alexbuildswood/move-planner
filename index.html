@@ -102,6 +102,9 @@
   .gcfg-panel{padding:14px 20px;border-bottom:0.5px solid var(--border);background:var(--surface-alt);}
   .gcfg-panel label{display:block;font-size:11.5px;color:var(--text-secondary);margin-bottom:4px;}
   .gcfg-panel input[type="text"]{width:100%;padding:8px 10px;border:1px solid var(--border-strong);border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:10px;color:var(--text);background:var(--surface);}
+  .house-subtabs{display:flex;gap:4px;margin:14px 20px 4px;background:var(--surface-alt);border-radius:10px;padding:3px;}
+  .house-subtab-btn{flex:1;border:none;background:transparent;padding:7px 0;font-size:12.5px;color:var(--text-secondary);border-radius:8px;cursor:pointer;font-family:inherit;}
+  .house-subtab-btn.active{background:var(--surface);color:var(--text);font-weight:600;box-shadow:0 0 0 1px var(--border);}
   .house-card{padding:16px 20px;border-bottom:0.5px solid var(--border);}
   .house-card.house-passed{opacity:.5;}
   .house-card.house-passed .house-address{text-decoration:line-through;color:var(--text-muted);}
@@ -213,7 +216,14 @@
       </div>
       <p class="hint" style="margin:0;">See the README for how to get a client ID. Sync only works once this app is hosted online (GitHub Pages etc.) &mdash; it can't authenticate when opened as a local file. Your checklist is not affected if you skip this.</p>
     </div>
-    <div id="houses-body"><p class="empty-state">Connect your Google Sheet to see your houses here.</p></div>
+    <div class="house-subtabs" id="house-subtabs">
+      <button class="house-subtab-btn active" data-house-tab="toview">To View</button>
+      <button class="house-subtab-btn" data-house-tab="nodecision">No</button>
+      <button class="house-subtab-btn" data-house-tab="yesdecision">Yes</button>
+    </div>
+    <div id="houses-body-toview"><p class="empty-state">Connect your Google Sheet to see your houses here.</p></div>
+    <div id="houses-body-nodecision" style="display:none;"><p class="empty-state">Connect your Google Sheet to see your houses here.</p></div>
+    <div id="houses-body-yesdecision" style="display:none;"><p class="empty-state">Connect your Google Sheet to see your houses here.</p></div>
   </div>
 
   <footer>Saved automatically in this browser. Nothing is sent anywhere unless you connect Google Sheets.</footer>
@@ -403,6 +413,19 @@ document.querySelectorAll(".tab-btn").forEach(function(btn){
   });
 });
 
+var HOUSE_TAB_KEYS = ["toview","nodecision","yesdecision"];
+document.querySelectorAll(".house-subtab-btn").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    document.querySelectorAll(".house-subtab-btn").forEach(function(b){ b.classList.remove("active"); });
+    btn.classList.add("active");
+    var key = btn.getAttribute("data-house-tab");
+    HOUSE_TAB_KEYS.forEach(function(k){
+      var cfg = tabByKey(k);
+      if(cfg) document.getElementById(cfg.bodyId).style.display = (k===key) ? "block" : "none";
+    });
+  });
+});
+
 var COUNTDOWN_KEY = "move_planner_countdown_v1";
 var countdown;
 try{ countdown = JSON.parse(localStorage.getItem(COUNTDOWN_KEY)); }catch(e){ countdown = null; }
@@ -487,8 +510,23 @@ try{
 
 var accessToken = null;
 var tokenClient = null;
-var housesTable = null;
+var housesTables = {};
 var checklistRowBySheet = {};
+
+// The three house-tracking tabs in the Google Sheet. sheetName must match
+// the tab name exactly (case-sensitive) as it appears in Google Sheets.
+var HOUSE_TABS = [
+  { key: "toview", sheetName: "To View", bodyId: "houses-body-toview", greyAll: false },
+  { key: "nodecision", sheetName: "No Decision", bodyId: "houses-body-nodecision", greyAll: true },
+  { key: "yesdecision", sheetName: "Yes Decision", bodyId: "houses-body-yesdecision", greyAll: false }
+];
+function tabByKey(key){
+  for(var i=0;i<HOUSE_TABS.length;i++){ if(HOUSE_TABS[i].key === key) return HOUSE_TABS[i]; }
+  return null;
+}
+function quotedRange(sheetName, a1){
+  return "'" + sheetName.replace(/'/g,"''") + "'!" + a1;
+}
 
 function saveGoogleConfig(){ localStorage.setItem(CONFIG_KEY, JSON.stringify(googleConfig)); }
 
@@ -607,12 +645,22 @@ function isTruthy(v){
 }
 
 function syncFromSheet(){
-  document.getElementById("houses-body").innerHTML = '<p class="empty-state">Loading your houses…</p>';
-  sheetsFetch("/values:batchGet?ranges=Houses!A1:AZ500&ranges=Checklist!A1:Z200&valueRenderOption=FORMATTED_VALUE")
+  HOUSE_TABS.forEach(function(t){
+    var el = document.getElementById(t.bodyId);
+    if(el) el.innerHTML = '<p class="empty-state">Loading your houses…</p>';
+  });
+  var rangeQS = HOUSE_TABS.map(function(t){
+    return "ranges=" + encodeURIComponent(quotedRange(t.sheetName, "A1:AZ500"));
+  }).join("&");
+  rangeQS += "&ranges=" + encodeURIComponent("Checklist!A1:Z200");
+  sheetsFetch("/values:batchGet?" + rangeQS + "&valueRenderOption=FORMATTED_VALUE")
     .then(function(data){
-      var houses = parseSheetTable(data.valueRanges[0].values);
-      var checklist = parseSheetTable(data.valueRanges[1].values);
-      renderHouses(houses);
+      HOUSE_TABS.forEach(function(t, idx){
+        var table = parseSheetTable(data.valueRanges[idx].values);
+        housesTables[t.key] = table;
+        renderHouseList(table, t);
+      });
+      var checklist = parseSheetTable(data.valueRanges[HOUSE_TABS.length].values);
       mergeChecklistFromSheet(checklist);
       setConnectionStatus(true);
     })
@@ -621,8 +669,8 @@ function syncFromSheet(){
     });
 }
 
-function renderHouses(table){
-  housesTable = table;
+function renderHouseList(table, tabConfig){
+  housesTables[tabConfig.key] = table;
   var headers = table.headers;
   var iToured = findCol(headers,[/toured/i]);
   var iInterest = findCol(headers,[/interest/i]);
@@ -643,35 +691,25 @@ function renderHouses(table){
   var iZillow = findCol(headers,[/zillow/i]);
   var known = [iToured,iInterest,iPrice,iAddress,iCity,iType,iBeds,iBaths,iSqft,iNotes,iLiveNotes,iMls,iZillow].filter(function(i){ return i>=0; });
 
+  var containerEl = document.getElementById(tabConfig.bodyId);
+  if(!containerEl) return;
+
   if(!table.rows.length){
-    document.getElementById("houses-body").innerHTML = '<p class="empty-state">No houses in the sheet yet.</p>';
+    containerEl.innerHTML = '<p class="empty-state">No houses in this tab yet.</p>';
     return;
   }
 
-  // Decision priority: undecided/blank first, then yes, then no last.
-  function decisionRank(v){
-    var s = (v||"").toString().trim().toLowerCase();
-    if(!s || /^maybe/.test(s)) return 0;
-    if(/^(yes|love|interested)/.test(s)) return 1;
-    if(/^(no|pass|decline)/.test(s)) return 2;
-    return 0;
-  }
-  var rows = table.rows.slice();
-  if(iInterest>=0){
-    rows.sort(function(a,b){ return decisionRank(a[iInterest]) - decisionRank(b[iInterest]); });
-  }
-
   var html = "";
-  rows.forEach(function(row){
+  table.rows.forEach(function(row){
     var address = iAddress>=0 ? row[iAddress] : ("Row "+row._row);
     var toured = iToured>=0 ? isTruthy(row[iToured]) : false;
     var interest = iInterest>=0 ? (row[iInterest]||"") : "";
     var interestClass = /love|yes|interested/i.test(interest) ? "interest-good" : /maybe/i.test(interest) ? "interest-mid" : /pass|no/i.test(interest) ? "interest-bad" : "";
-    var isPassed = iInterest>=0 && decisionRank(interest) === 2;
+    var isPassed = !!tabConfig.greyAll;
 
     html += '<div class="house-card'+(isPassed ? ' house-passed' : '')+'">';
     html += '<div class="house-head"><p class="house-address">'+escapeHtml(address||"Untitled")+'</p>'
-      + '<label class="house-toured"><input type="checkbox" class="toured-check" data-row="'+row._row+'"'+(toured?' checked':'')+'>Toured</label></div>';
+      + '<label class="house-toured"><input type="checkbox" class="toured-check" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'"'+(toured?' checked':'')+'>Toured</label></div>';
 
     html += '<div class="house-tags">';
     if(interest) html += '<span class="tag '+interestClass+'">'+escapeHtml(interest)+'</span>';
@@ -695,8 +733,8 @@ function renderHouses(table){
       var liveVal = row[iLiveNotes] || "";
       html += '<span class="house-notes-label">Live notes</span>';
       html += '<div class="house-live-notes">'
-        + '<textarea class="live-notes-input" data-row="'+row._row+'" rows="3" placeholder="Tap to jot notes on site&hellip;">'+escapeHtml(liveVal)+'</textarea>'
-        + '<span class="live-notes-status" data-row="'+row._row+'"></span>'
+        + '<textarea class="live-notes-input" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'" rows="3" placeholder="Tap to jot notes on site&hellip;">'+escapeHtml(liveVal)+'</textarea>'
+        + '<span class="live-notes-status" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'"></span>'
         + '</div>';
     }
 
@@ -715,7 +753,7 @@ function renderHouses(table){
     html += '</div>';
   });
 
-  document.getElementById("houses-body").innerHTML = html;
+  containerEl.innerHTML = html;
 }
 
 function mergeChecklistFromSheet(table){
@@ -742,11 +780,14 @@ function pushDoneToSheet(order, checked){
   }).catch(function(err){ console.warn("Failed to write checklist to sheet:", err.message); });
 }
 
-function pushTouredToSheet(row, checked){
-  if(!accessToken || !housesTable) return;
-  var iToured = findCol(housesTable.headers,[/toured/i]);
+function pushTouredToSheet(row, checked, tabKey){
+  if(!accessToken) return;
+  var table = housesTables[tabKey];
+  var tabCfg = tabByKey(tabKey);
+  if(!table || !tabCfg) return;
+  var iToured = findCol(table.headers,[/toured/i]);
   if(iToured<0) return;
-  sheetsFetch("/values/Houses!"+colLetter(iToured)+row+"?valueInputOption=USER_ENTERED", {
+  sheetsFetch("/values/"+encodeURIComponent(quotedRange(tabCfg.sheetName, colLetter(iToured)+row))+"?valueInputOption=USER_ENTERED", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ values: [[ checked ]] })
@@ -754,8 +795,8 @@ function pushTouredToSheet(row, checked){
 }
 
 var liveNotesTimers = {};
-function setLiveNotesStatus(row, state){
-  var el = document.querySelector('.live-notes-status[data-row="'+row+'"]');
+function setLiveNotesStatus(row, state, tabKey){
+  var el = document.querySelector('.live-notes-status[data-row="'+row+'"][data-house-tab="'+tabKey+'"]');
   if(!el) return;
   el.classList.remove("saving","saved");
   if(state === "saving"){ el.textContent = "Saving…"; el.classList.add("saving"); }
@@ -764,31 +805,38 @@ function setLiveNotesStatus(row, state){
   else { el.textContent = ""; }
 }
 
-function pushLiveNotesToSheet(row, text){
-  if(!accessToken || !housesTable){ return; }
-  var iLiveNotes = findCol(housesTable.headers,[/live\s*notes/i]);
+function pushLiveNotesToSheet(row, text, tabKey){
+  if(!accessToken) return;
+  var table = housesTables[tabKey];
+  var tabCfg = tabByKey(tabKey);
+  if(!table || !tabCfg) return;
+  var iLiveNotes = findCol(table.headers,[/live\s*notes/i]);
   if(iLiveNotes<0) return;
-  setLiveNotesStatus(row, "saving");
-  sheetsFetch("/values/Houses!"+colLetter(iLiveNotes)+row+"?valueInputOption=USER_ENTERED", {
+  setLiveNotesStatus(row, "saving", tabKey);
+  sheetsFetch("/values/"+encodeURIComponent(quotedRange(tabCfg.sheetName, colLetter(iLiveNotes)+row))+"?valueInputOption=USER_ENTERED", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ values: [[ text ]] })
-  }).then(function(){ setLiveNotesStatus(row, "saved"); })
-    .catch(function(err){ console.warn("Failed to write live notes to sheet:", err.message); setLiveNotesStatus(row, "error"); });
+  }).then(function(){ setLiveNotesStatus(row, "saved", tabKey); })
+    .catch(function(err){ console.warn("Failed to write live notes to sheet:", err.message); setLiveNotesStatus(row, "error", tabKey); });
 }
 
 function scheduleLiveNotesSave(textarea){
   var row = textarea.getAttribute("data-row");
-  clearTimeout(liveNotesTimers[row]);
-  liveNotesTimers[row] = setTimeout(function(){
-    pushLiveNotesToSheet(row, textarea.value);
+  var tabKey = textarea.getAttribute("data-house-tab");
+  var key = tabKey + ":" + row;
+  clearTimeout(liveNotesTimers[key]);
+  liveNotesTimers[key] = setTimeout(function(){
+    pushLiveNotesToSheet(row, textarea.value, tabKey);
   }, 800);
 }
 
 function flushLiveNotesSave(textarea){
   var row = textarea.getAttribute("data-row");
-  clearTimeout(liveNotesTimers[row]);
-  pushLiveNotesToSheet(row, textarea.value);
+  var tabKey = textarea.getAttribute("data-house-tab");
+  var key = tabKey + ":" + row;
+  clearTimeout(liveNotesTimers[key]);
+  pushLiveNotesToSheet(row, textarea.value, tabKey);
 }
 
 var BULLET = "• ";
@@ -874,7 +922,7 @@ document.getElementById("sync-btn").addEventListener("click", syncFromSheet);
 document.getElementById("disconnect-btn").addEventListener("click", disconnectGoogle);
 document.addEventListener("change", function(e){
   if(e.target.classList.contains("toured-check")){
-    pushTouredToSheet(e.target.getAttribute("data-row"), e.target.checked);
+    pushTouredToSheet(e.target.getAttribute("data-row"), e.target.checked, e.target.getAttribute("data-house-tab"));
   }
 });
 
