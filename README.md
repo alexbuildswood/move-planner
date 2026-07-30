@@ -92,11 +92,27 @@ values are actually in your sheet — tap a chip to filter, tap it again or
 hit "Clear filters" to reset. Filters combine (e.g. City=Austin AND
 Interest=Like).
 
+## Moving a house between tabs
+
+Every To View card has **No** and **Yes** buttons. Tapping one moves that
+house immediately — it's written to the No Decision or Yes Decision tab in
+your sheet and removed from To View. No and Yes Decision cards each have a
+"&#8617; Move back to To View" button in case you change your mind; nothing
+is ever deleted for good, a move just relocates the row between tabs.
+
+A move copies over whatever fields match by column name or by type
+(address, city, price, interest, notes, links, etc.) between tabs, so it
+works even though each tab has different columns. Columns that only exist
+on the destination tab (like Applied/Accepted on Yes Decision) start blank.
+While a move is in progress the card shows "Moving…" and is disabled for a
+moment.
+
 ## Applied / Accepted (Yes Decision tab only)
 
 If your `Yes Decision` tab has columns named `Applied` or `Accepted`, the
-app features them prominently near the top of each card instead of tucking
-them into the plain extra-fields list.
+app shows them as checkboxes near the top of each card — check them off as
+you apply and hear back, and it writes TRUE/FALSE straight to those columns
+in your sheet.
 
 Notes:
 - The Spreadsheet ID field is pre-filled with your Move_Plan sheet; only

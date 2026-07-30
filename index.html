@@ -83,14 +83,16 @@
   .task-note{margin:6px 0 0;font-size:11.5px;color:var(--text-muted);line-height:1.4;}
   .empty-state{padding:40px 20px;text-align:center;color:var(--text-muted);font-size:13px;}
   #view-timeline{padding-bottom:16px;}
-  .tl-scroll{overflow-x:auto;padding:0 20px 8px;-webkit-overflow-scrolling:touch;}
+  .tl-wrap{display:flex;align-items:flex-start;}
+  .tl-labels{width:118px;flex-shrink:0;padding:0 8px 8px 20px;box-sizing:border-box;border-right:0.5px solid var(--border);background:var(--surface);}
+  .tl-scroll{overflow-x:auto;flex:1;min-width:0;padding:0 20px 8px 10px;-webkit-overflow-scrolling:touch;}
   .tl-inner{position:relative;}
   .tl-gridline{position:absolute;top:0;bottom:0;width:1px;background:var(--border);}
-  .tl-axis-row{display:flex;align-items:center;gap:10px;padding-bottom:6px;}
-  .tl-label{width:108px;flex-shrink:0;position:sticky;left:0;background:var(--surface);z-index:1;font-size:11px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;border-right:0.5px solid var(--border);}
-  .tl-section-row{display:flex;align-items:center;gap:10px;padding:10px 0 2px;}
-  .tl-section-label{width:108px;flex-shrink:0;position:sticky;left:0;background:var(--surface);z-index:1;font-size:11px;font-weight:600;color:var(--text-secondary);display:flex;align-items:center;gap:6px;}
-  .tl-row{display:flex;align-items:center;gap:10px;padding:6px 0;}
+  .tl-row-axis{height:20px;display:flex;align-items:flex-start;}
+  .tl-row-section{height:26px;display:flex;align-items:flex-end;padding-bottom:2px;box-sizing:border-box;}
+  .tl-row-task{height:26px;display:flex;align-items:center;}
+  .tl-label{font-size:11px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;}
+  .tl-section-label{font-size:11px;font-weight:600;color:var(--text-secondary);display:flex;align-items:center;gap:6px;width:100%;}
   .tl-track{height:14px;background:var(--surface-alt);border-radius:4px;position:relative;flex-shrink:0;}
   .tl-bar{position:absolute;top:0;height:100%;border-radius:4px;background:var(--text-muted);}
   .tl-bar.done{background:var(--green);}
@@ -165,6 +167,15 @@
   .house-featured-item{display:flex;flex-direction:column;gap:2px;padding:8px 12px;border-radius:12px;background:var(--accent-bg);border:1px solid var(--border-strong);min-width:110px;}
   .house-featured-label{font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
   .house-featured-value{font-size:13.5px;color:var(--text);font-weight:600;}
+  .house-featured-check{flex-direction:row;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;min-width:0;}
+  .house-featured-check input{width:18px;height:18px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;}
+  .house-move-actions{display:flex;gap:8px;margin-top:14px;}
+  .move-btn{flex:1;border:none;border-radius:10px;padding:9px 0;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;}
+  .move-no{background:var(--soft-red-bg);color:var(--soft-red-text);}
+  .move-yes{background:var(--green-bg);color:var(--green);}
+  .move-back{background:var(--surface);border:1px solid var(--border-strong);color:var(--text-secondary);}
+  .house-card-moving{opacity:.55;pointer-events:none;}
+  .move-status{font-size:12px;color:var(--text-muted);font-style:italic;padding:9px 0;}
 </style>
 </head>
 <body>
@@ -212,8 +223,11 @@
   </div>
 
   <div id="view-timeline" style="display:none;">
-    <div class="tl-scroll">
-      <div class="tl-inner" id="tl-inner"></div>
+    <div class="tl-wrap">
+      <div class="tl-labels" id="tl-labels"></div>
+      <div class="tl-scroll">
+        <div class="tl-inner" id="tl-inner"></div>
+      </div>
     </div>
     <p class="hint">Scroll to see the full date range &rarr;</p>
     <div class="tl-legend">
@@ -404,37 +418,42 @@ function renderTimeline(){
   for(var d=0; d<=TOTAL_DAYS; d+=7){ weeks.push(d); }
   if(weeks[weeks.length-1] !== TOTAL_DAYS) weeks.push(TOTAL_DAYS);
 
-  var html = "";
+  var labelsHtml = "";
+  var barsHtml = "";
+
   weeks.forEach(function(d){
-    html += '<div class="tl-gridline" style="left:'+(108+10+d*PX_PER_DAY)+'px;'+(d===0?'background:var(--today);':'')+'"></div>';
+    barsHtml += '<div class="tl-gridline" style="left:'+(d*PX_PER_DAY)+'px;'+(d===0?'background:var(--today);':'')+'"></div>';
   });
 
-  html += '<div class="tl-axis-row"><div class="tl-label" style="border-right:none;background:transparent;"></div><div style="width:'+TL_WIDTH+'px;flex-shrink:0;position:relative;height:14px;">';
+  labelsHtml += '<div class="tl-row-axis"></div>';
+  barsHtml += '<div class="tl-row-axis" style="width:'+TL_WIDTH+'px;position:relative;">';
   weeks.forEach(function(d){
     var dt = new Date(RANGE_START.getTime() + d*MS_DAY);
     var lbl = dt.toLocaleDateString("en-US",{month:"short",day:"numeric"});
     var isToday = d===0;
     var isLast = d===TOTAL_DAYS;
     var transform = isToday ? "translateX(0%)" : (isLast ? "translateX(-85%)" : "translateX(-50%)");
-    html += '<span style="position:absolute;left:'+(d*PX_PER_DAY)+'px;transform:'+transform+';font-size:10.5px;color:'+(isToday?'var(--today)':'var(--text-muted)')+';font-weight:'+(isToday?'600':'400')+';">'+(isToday?"Today":lbl)+'</span>';
+    barsHtml += '<span style="position:absolute;left:'+(d*PX_PER_DAY)+'px;top:0;transform:'+transform+';font-size:10.5px;color:'+(isToday?'var(--today)':'var(--text-muted)')+';font-weight:'+(isToday?'600':'400')+';">'+(isToday?"Today":lbl)+'</span>';
   });
-  html += '</div></div>';
+  barsHtml += '</div>';
 
   groups.forEach(function(g){
     var c = TRACK_COLORS[g.track] || {dot:"var(--text-muted)"};
-    html += '<div class="tl-section-row"><div class="tl-section-label"><span class="dot" style="background:'+c.dot+'"></span>'+g.track+'</div><div style="width:'+TL_WIDTH+'px;flex-shrink:0;"></div></div>';
+    labelsHtml += '<div class="tl-row-section"><div class="tl-section-label"><span class="dot" style="background:'+c.dot+'"></span>'+g.track+'</div></div>';
+    barsHtml += '<div class="tl-row-section" style="width:'+TL_WIDTH+'px;"></div>';
     g.items.forEach(function(t){
       var left = dayOffset(t.start) * PX_PER_DAY;
       var width = Math.max(dayOffset(t.end)*PX_PER_DAY - left, 4);
       var isDone = !!done[t.o];
-      html += '<div class="tl-row"><div class="tl-label">'+shortLabel(t)+'</div>'
-        + '<div class="tl-track" style="width:'+TL_WIDTH+'px;">'
+      labelsHtml += '<div class="tl-row-task"><div class="tl-label">'+shortLabel(t)+'</div></div>';
+      barsHtml += '<div class="tl-row-task"><div class="tl-track" style="width:'+TL_WIDTH+'px;">'
         + '<div class="tl-bar'+(isDone?' done':'')+'" data-order="'+t.o+'" style="left:'+left+'px;width:'+width+'px;"></div>'
         + '</div></div>';
     });
   });
 
-  document.getElementById("tl-inner").innerHTML = html;
+  document.getElementById("tl-labels").innerHTML = labelsHtml;
+  document.getElementById("tl-inner").innerHTML = barsHtml;
 }
 
 var RING_CIRCUMFERENCE = 169.6;
@@ -586,6 +605,8 @@ var accessToken = null;
 var tokenClient = null;
 var housesTables = {};
 var checklistRowBySheet = {};
+var movingHouseKeys = {};
+var sheetIdByName = {};
 
 // The three house-tracking tabs in the Google Sheet. sheetName must match
 // the tab name exactly (case-sensitive) as it appears in Google Sheets.
@@ -641,6 +662,7 @@ function connectGoogle(){
   googleConfig.clientId = document.getElementById("gcfg-client-id").value.trim();
   googleConfig.spreadsheetId = document.getElementById("gcfg-sheet-id").value.trim() || DEFAULT_SPREADSHEET_ID;
   saveGoogleConfig();
+  sheetIdByName = {};
   if(!googleConfig.clientId){
     setConnectionStatus(false, "Paste your Google OAuth client ID first.");
     return;
@@ -727,8 +749,9 @@ function syncFromSheet(){
     return "ranges=" + encodeURIComponent(quotedRange(t.sheetName, "A1:AZ500"));
   }).join("&");
   rangeQS += "&ranges=" + encodeURIComponent("Checklist!A1:Z200");
-  sheetsFetch("/values:batchGet?" + rangeQS + "&valueRenderOption=FORMATTED_VALUE")
+  return sheetsFetch("/values:batchGet?" + rangeQS + "&valueRenderOption=FORMATTED_VALUE")
     .then(function(data){
+      movingHouseKeys = {};
       HOUSE_TABS.forEach(function(t, idx){
         var table = parseSheetTable(data.valueRanges[idx].values);
         housesTables[t.key] = table;
@@ -798,12 +821,6 @@ function classifyInterest(interest){
   return "";
 }
 
-function formatFeaturedValue(v){
-  if(v === true || v === "TRUE" || v === "true") return "Yes";
-  if(v === false || v === "FALSE" || v === "false") return "No";
-  return v;
-}
-
 function buildHouseCardsHtml(rows, headers, tabConfig, cols){
   var iToured=cols.iToured, iInterest=cols.iInterest, iPrice=cols.iPrice, iAddress=cols.iAddress,
       iCity=cols.iCity, iType=cols.iType, iBeds=cols.iBeds, iBaths=cols.iBaths, iSqft=cols.iSqft,
@@ -820,8 +837,9 @@ function buildHouseCardsHtml(rows, headers, tabConfig, cols){
     var interestClass = classifyInterest(interest);
     var isPassed = !!tabConfig.greyAll;
     var cardId = "house-card-"+tabConfig.key+"-"+row._row;
+    var moving = isHouseMoving(tabConfig.key, row._row);
 
-    html += '<div class="house-card'+(isPassed ? ' house-passed' : '')+'" id="'+cardId+'" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'">';
+    html += '<div class="house-card'+(isPassed ? ' house-passed' : '')+(moving ? ' house-card-moving' : '')+'" id="'+cardId+'" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'">';
     html += '<div class="house-head"><p class="house-address">'+escapeHtml(address)+'</p>'
       + '<label class="house-toured"><input type="checkbox" class="toured-check" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'"'+(toured?' checked':'')+'>Toured</label></div>';
 
@@ -835,13 +853,15 @@ function buildHouseCardsHtml(rows, headers, tabConfig, cols){
     if(iType>=0 && row[iType]) html += '<span class="tag">'+escapeHtml(row[iType])+'</span>';
     html += '</div>';
 
-    if(tabConfig.key === "yesdecision" && ((iApplied>=0 && row[iApplied]!=="") || (iAccepted>=0 && row[iAccepted]!==""))){
+    if(tabConfig.key === "yesdecision" && (iApplied>=0 || iAccepted>=0)){
       html += '<div class="house-featured">';
-      if(iApplied>=0 && row[iApplied]!==""){
-        html += '<div class="house-featured-item"><span class="house-featured-label">Applied</span><span class="house-featured-value">'+escapeHtml(formatFeaturedValue(row[iApplied]))+'</span></div>';
+      if(iApplied>=0){
+        html += '<label class="house-featured-item house-featured-check"><span class="house-featured-label">Applied</span>'
+          + '<input type="checkbox" class="applied-check" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'"'+(isTruthy(row[iApplied])?' checked':'')+'></label>';
       }
-      if(iAccepted>=0 && row[iAccepted]!==""){
-        html += '<div class="house-featured-item"><span class="house-featured-label">Accepted</span><span class="house-featured-value">'+escapeHtml(formatFeaturedValue(row[iAccepted]))+'</span></div>';
+      if(iAccepted>=0){
+        html += '<label class="house-featured-item house-featured-check"><span class="house-featured-label">Accepted</span>'
+          + '<input type="checkbox" class="accepted-check" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'"'+(isTruthy(row[iAccepted])?' checked':'')+'></label>';
       }
       html += '</div>';
     }
@@ -878,6 +898,19 @@ function buildHouseCardsHtml(rows, headers, tabConfig, cols){
     if(iMls>=0 && row[iMls]) links += '<a class="house-link" href="'+row[iMls]+'" target="_blank" rel="noopener">MLS listing</a>';
     if(iZillow>=0 && row[iZillow]) links += '<a class="house-link" href="'+row[iZillow]+'" target="_blank" rel="noopener">Zillow</a>';
     if(links) html += '<div class="house-links">'+links+'</div>';
+
+    if(moving){
+      html += '<div class="house-move-actions"><span class="move-status">Moving&hellip;</span></div>';
+    } else if(tabConfig.key === "toview"){
+      html += '<div class="house-move-actions">'
+        + '<button type="button" class="move-btn move-no" data-row="'+row._row+'" data-house-tab="toview" data-move-to="nodecision">No</button>'
+        + '<button type="button" class="move-btn move-yes" data-row="'+row._row+'" data-house-tab="toview" data-move-to="yesdecision">Yes</button>'
+        + '</div>';
+    } else {
+      html += '<div class="house-move-actions">'
+        + '<button type="button" class="move-btn move-back" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'" data-move-to="toview">&#8617; Move back to To View</button>'
+        + '</div>';
+    }
 
     html += '</div>';
   });
@@ -985,6 +1018,14 @@ document.addEventListener("click", function(e){
   if(e.target.id === "filters-clear-btn" || (e.target.closest && e.target.closest("#filters-clear-btn"))){
     toViewFilters = { interest: null, city: null, type: null };
     applyToViewFilters();
+    return;
+  }
+  var moveBtn = e.target.closest && e.target.closest(".move-btn");
+  if(moveBtn){
+    var fromKey = moveBtn.getAttribute("data-house-tab");
+    var toKey = moveBtn.getAttribute("data-move-to");
+    var moveRow = moveBtn.getAttribute("data-row");
+    moveHouseToTab(fromKey, toKey, moveRow);
   }
 });
 
@@ -1012,18 +1053,159 @@ function pushDoneToSheet(order, checked){
   }).catch(function(err){ console.warn("Failed to write checklist to sheet:", err.message); });
 }
 
-function pushTouredToSheet(row, checked, tabKey){
+function pushHouseCellToSheet(tabKey, row, colIndex, value){
   if(!accessToken) return;
-  var table = housesTables[tabKey];
   var tabCfg = tabByKey(tabKey);
-  if(!table || !tabCfg) return;
-  var iToured = findCol(table.headers,[/toured/i]);
-  if(iToured<0) return;
-  sheetsFetch("/values/"+encodeURIComponent(quotedRange(tabCfg.sheetName, colLetter(iToured)+row))+"?valueInputOption=USER_ENTERED", {
+  if(!tabCfg || colIndex<0) return;
+  sheetsFetch("/values/"+encodeURIComponent(quotedRange(tabCfg.sheetName, colLetter(colIndex)+row))+"?valueInputOption=USER_ENTERED", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ values: [[ checked ]] })
+    body: JSON.stringify({ values: [[ value ]] })
   }).catch(function(err){ console.warn("Failed to write houses to sheet:", err.message); });
+}
+
+function pushTouredToSheet(row, checked, tabKey){
+  var table = housesTables[tabKey];
+  if(!table) return;
+  var iToured = findCol(table.headers,[/toured/i]);
+  pushHouseCellToSheet(tabKey, row, iToured, checked);
+}
+
+function pushAppliedToSheet(row, checked, tabKey){
+  var table = housesTables[tabKey];
+  if(!table) return;
+  var iApplied = findCol(table.headers,[/applied/i]);
+  pushHouseCellToSheet(tabKey, row, iApplied, checked);
+}
+
+function pushAcceptedToSheet(row, checked, tabKey){
+  var table = housesTables[tabKey];
+  if(!table) return;
+  var iAccepted = findCol(table.headers,[/accepted/i]);
+  pushHouseCellToSheet(tabKey, row, iAccepted, checked);
+}
+
+// ---- Moving a house between To View / No Decision / Yes Decision ----
+function ensureSheetIds(){
+  if(Object.keys(sheetIdByName).length) return Promise.resolve(sheetIdByName);
+  return sheetsFetch("?fields=sheets.properties(sheetId,title)").then(function(data){
+    (data.sheets||[]).forEach(function(s){
+      sheetIdByName[s.properties.title] = s.properties.sheetId;
+    });
+    return sheetIdByName;
+  });
+}
+
+function extractRowFields(row, headers, cols){
+  var byHeader = {};
+  headers.forEach(function(h, i){
+    var key = (h||"").toString().trim().toLowerCase();
+    if(key) byHeader[key] = row[i] !== undefined ? row[i] : "";
+  });
+  return {
+    byHeader: byHeader,
+    address: cols.iAddress>=0 ? (row[cols.iAddress]||"") : "",
+    city: cols.iCity>=0 ? (row[cols.iCity]||"") : "",
+    price: cols.iPrice>=0 ? (row[cols.iPrice]||"") : "",
+    type: cols.iType>=0 ? (row[cols.iType]||"") : "",
+    beds: cols.iBeds>=0 ? (row[cols.iBeds]||"") : "",
+    baths: cols.iBaths>=0 ? (row[cols.iBaths]||"") : "",
+    sqft: cols.iSqft>=0 ? (row[cols.iSqft]||"") : "",
+    notes: cols.iNotes>=0 ? (row[cols.iNotes]||"") : "",
+    liveNotes: cols.iLiveNotes>=0 ? (row[cols.iLiveNotes]||"") : "",
+    mls: cols.iMls>=0 ? (row[cols.iMls]||"") : "",
+    zillow: cols.iZillow>=0 ? (row[cols.iZillow]||"") : "",
+    interest: cols.iInterest>=0 ? (row[cols.iInterest]||"") : "",
+    toured: cols.iToured>=0 ? (row[cols.iToured]||"") : "",
+    applied: cols.iApplied>=0 ? (row[cols.iApplied]||"") : "",
+    accepted: cols.iAccepted>=0 ? (row[cols.iAccepted]||"") : ""
+  };
+}
+
+var FEATURED_FIELD_BY_COL = {
+  iAddress:"address", iCity:"city", iPrice:"price", iType:"type", iBeds:"beds",
+  iBaths:"baths", iSqft:"sqft", iNotes:"notes", iLiveNotes:"liveNotes", iMls:"mls",
+  iZillow:"zillow", iInterest:"interest", iToured:"toured", iApplied:"applied", iAccepted:"accepted"
+};
+
+function buildDestRowValues(fields, destHeaders, destCols){
+  return destHeaders.map(function(h, i){
+    var key = (h||"").toString().trim().toLowerCase();
+    if(key && fields.byHeader.hasOwnProperty(key)) return fields.byHeader[key];
+    for(var colKey in FEATURED_FIELD_BY_COL){
+      if(destCols[colKey] === i) return fields[FEATURED_FIELD_BY_COL[colKey]];
+    }
+    return "";
+  });
+}
+
+function isHouseMoving(tabKey, row){
+  return !!movingHouseKeys[tabKey+":"+row];
+}
+
+function rerenderHouseTab(tabKey){
+  var cfg = tabByKey(tabKey);
+  var table = housesTables[tabKey];
+  if(cfg && table) renderHouseList(table, cfg);
+}
+
+function moveHouseToTab(fromKey, toKey, row){
+  if(!accessToken){
+    alert("Connect your Google Sheet first to move houses between tabs.");
+    return;
+  }
+  var fromCfg = tabByKey(fromKey), toCfg = tabByKey(toKey);
+  var fromTable = housesTables[fromKey];
+  if(!fromCfg || !toCfg || !fromTable) return;
+  var srcRowObj = null;
+  for(var i=0;i<fromTable.rows.length;i++){
+    if(fromTable.rows[i]._row === Number(row)){ srcRowObj = fromTable.rows[i]; break; }
+  }
+  if(!srcRowObj) return;
+
+  movingHouseKeys[fromKey+":"+row] = true;
+  rerenderHouseTab(fromKey);
+
+  var fromCols = computeHouseColumns(fromTable.headers);
+  var fields = extractRowFields(srcRowObj, fromTable.headers, fromCols);
+
+  ensureSheetIds().then(function(){
+    var destTable = housesTables[toKey];
+    var destHeadersPromise = (destTable && destTable.headers && destTable.headers.length)
+      ? Promise.resolve(destTable.headers)
+      : sheetsFetch("/values/"+encodeURIComponent(quotedRange(toCfg.sheetName, "1:1"))).then(function(data){
+          return (data.values && data.values[0]) || [];
+        });
+    return destHeadersPromise;
+  }).then(function(destHeaders){
+    var destCols = computeHouseColumns(destHeaders);
+    var destRowValues = buildDestRowValues(fields, destHeaders, destCols);
+    return sheetsFetch("/values/"+encodeURIComponent(quotedRange(toCfg.sheetName, "A1:AZ"))+":append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ values: [destRowValues] })
+    });
+  }).then(function(){
+    var srcSheetId = sheetIdByName[fromCfg.sheetName];
+    if(srcSheetId === undefined) throw new Error("Couldn't find the '"+fromCfg.sheetName+"' tab in your sheet.");
+    return sheetsFetch(":batchUpdate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        requests: [{
+          deleteDimension: {
+            range: { sheetId: srcSheetId, dimension: "ROWS", startIndex: Number(row)-1, endIndex: Number(row) }
+          }
+        }]
+      })
+    });
+  }).then(function(){
+    return syncFromSheet();
+  }).catch(function(err){
+    delete movingHouseKeys[fromKey+":"+row];
+    rerenderHouseTab(fromKey);
+    alert("Couldn't move that house: " + err.message);
+  });
 }
 
 var liveNotesTimers = {};
@@ -1155,6 +1337,12 @@ document.getElementById("disconnect-btn").addEventListener("click", disconnectGo
 document.addEventListener("change", function(e){
   if(e.target.classList.contains("toured-check")){
     pushTouredToSheet(e.target.getAttribute("data-row"), e.target.checked, e.target.getAttribute("data-house-tab"));
+  }
+  if(e.target.classList.contains("applied-check")){
+    pushAppliedToSheet(e.target.getAttribute("data-row"), e.target.checked, e.target.getAttribute("data-house-tab"));
+  }
+  if(e.target.classList.contains("accepted-check")){
+    pushAcceptedToSheet(e.target.getAttribute("data-row"), e.target.checked, e.target.getAttribute("data-house-tab"));
   }
 });
 
