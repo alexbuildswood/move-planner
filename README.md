@@ -80,6 +80,26 @@ project — that sounds heavier than it is; it's about 10 minutes.
    line, so new columns you add always show up without needing an app
    update.
 
+Across all three tabs, "Like" interest values get a yellow highlight, city
+tags are automatically color-coded (same city always gets the same color),
+and blank addresses no longer show as "Untitled" — they fall back to the
+city name, or "Row N" if both are blank.
+
+## Filtering and the map (To View tab only)
+
+The To View tab has a filter bar (Interest, City, Type) built from whatever
+values are actually in your sheet — tap a chip to filter, tap it again or
+hit "Clear filters" to reset. Filters combine (e.g. City=Austin AND
+Interest=Like).
+
+Below the filters is a live map showing a pin for every To View property
+with an address or city filled in. It uses OpenStreetMap and the free
+Nominatim geocoding service — no API key or extra setup needed, unlike the
+Google Sheets connection. Tap a pin's popup to jump straight to that
+listing's card. Geocoding is rate-limited to about one request per second
+and cached in your browser, so re-opening the app or filtering doesn't
+re-geocode addresses it's already looked up.
+
 Notes:
 - The Spreadsheet ID field is pre-filled with your Move_Plan sheet; only
   change it if you copy this app for a different sheet.
