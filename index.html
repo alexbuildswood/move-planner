@@ -13,8 +13,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root{
@@ -131,7 +129,6 @@
   .house-card.house-passed{background:var(--soft-red-bg);border-color:rgba(224,114,138,0.35);border-left:3px solid var(--soft-red);padding-left:17px;}
   .house-card.house-passed .house-address{color:var(--soft-red-text);}
   .house-card.house-passed .hstat-num{color:var(--soft-red-text);}
-  .house-card.just-focused{box-shadow:0 0 0 3px var(--accent), 0 10px 26px rgba(94,74,180,0.12);}
   .interest-like{background:#FEF9C3;color:#A16207;}
   .house-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
   .house-toured{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-secondary);cursor:pointer;white-space:nowrap;order:2;}
@@ -164,9 +161,10 @@
   .filter-chip{border:1px solid var(--border-strong);background:var(--surface-alt);border-radius:999px;padding:4px 10px;font-size:11.5px;color:var(--text-secondary);cursor:pointer;font-family:inherit;}
   .filter-chip.active{background:var(--accent-bg);border-color:var(--accent);color:var(--accent);font-weight:600;}
   #filters-clear-btn{align-self:flex-start;margin-top:2px;}
-  .house-map-wrap{padding:6px 20px 4px;}
-  .house-map{height:220px;border-radius:14px;overflow:hidden;border:1px solid var(--border);}
-  #house-map-hint{margin:6px 0 0;font-size:10.5px;color:var(--text-muted);}
+  .house-featured{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+  .house-featured-item{display:flex;flex-direction:column;gap:2px;padding:8px 12px;border-radius:12px;background:var(--accent-bg);border:1px solid var(--border-strong);min-width:110px;}
+  .house-featured-label{font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+  .house-featured-value{font-size:13.5px;color:var(--text);font-weight:600;}
 </style>
 </head>
 <body>
@@ -286,10 +284,6 @@
           <div class="filter-chip-row" id="filter-type"></div>
         </div>
         <button type="button" class="mini-btn" id="filters-clear-btn">Clear filters</button>
-      </div>
-      <div class="house-map-wrap">
-        <div id="house-map" class="house-map"></div>
-        <p id="house-map-hint"></p>
       </div>
     </div>
     <div id="houses-body-toview"><p class="empty-state">Connect your Google Sheet to see your houses here.</p></div>
@@ -502,9 +496,6 @@ document.querySelectorAll(".house-subtab-btn").forEach(function(btn){
     var extrasEl = document.getElementById("toview-extras");
     if(extrasEl){
       extrasEl.style.display = (key==="toview") ? "block" : "none";
-      if(key==="toview" && houseMapInstance){
-        setTimeout(function(){ houseMapInstance.invalidateSize(); }, 60);
-      }
     }
   });
 });
@@ -770,11 +761,13 @@ function computeHouseColumns(headers){
   }
   var iMls = findCol(headers,[/mls/i]);
   var iZillow = findCol(headers,[/zillow/i]);
-  var known = [iToured,iInterest,iPrice,iAddress,iCity,iType,iBeds,iBaths,iSqft,iNotes,iLiveNotes,iMls,iZillow].filter(function(i){ return i>=0; });
+  var iApplied = findCol(headers,[/applied/i]);
+  var iAccepted = findCol(headers,[/accepted/i]);
+  var known = [iToured,iInterest,iPrice,iAddress,iCity,iType,iBeds,iBaths,iSqft,iNotes,iLiveNotes,iMls,iZillow,iApplied,iAccepted].filter(function(i){ return i>=0; });
   return {
     iToured:iToured, iInterest:iInterest, iPrice:iPrice, iAddress:iAddress, iCity:iCity,
     iType:iType, iBeds:iBeds, iBaths:iBaths, iSqft:iSqft, iNotes:iNotes, iLiveNotes:iLiveNotes,
-    iMls:iMls, iZillow:iZillow, known:known
+    iMls:iMls, iZillow:iZillow, iApplied:iApplied, iAccepted:iAccepted, known:known
   };
 }
 
@@ -805,10 +798,17 @@ function classifyInterest(interest){
   return "";
 }
 
+function formatFeaturedValue(v){
+  if(v === true || v === "TRUE" || v === "true") return "Yes";
+  if(v === false || v === "FALSE" || v === "false") return "No";
+  return v;
+}
+
 function buildHouseCardsHtml(rows, headers, tabConfig, cols){
   var iToured=cols.iToured, iInterest=cols.iInterest, iPrice=cols.iPrice, iAddress=cols.iAddress,
       iCity=cols.iCity, iType=cols.iType, iBeds=cols.iBeds, iBaths=cols.iBaths, iSqft=cols.iSqft,
-      iNotes=cols.iNotes, iLiveNotes=cols.iLiveNotes, iMls=cols.iMls, iZillow=cols.iZillow, known=cols.known;
+      iNotes=cols.iNotes, iLiveNotes=cols.iLiveNotes, iMls=cols.iMls, iZillow=cols.iZillow,
+      iApplied=cols.iApplied, iAccepted=cols.iAccepted, known=cols.known;
 
   var html = "";
   rows.forEach(function(row){
@@ -834,6 +834,17 @@ function buildHouseCardsHtml(rows, headers, tabConfig, cols){
     }
     if(iType>=0 && row[iType]) html += '<span class="tag">'+escapeHtml(row[iType])+'</span>';
     html += '</div>';
+
+    if(tabConfig.key === "yesdecision" && ((iApplied>=0 && row[iApplied]!=="") || (iAccepted>=0 && row[iAccepted]!==""))){
+      html += '<div class="house-featured">';
+      if(iApplied>=0 && row[iApplied]!==""){
+        html += '<div class="house-featured-item"><span class="house-featured-label">Applied</span><span class="house-featured-value">'+escapeHtml(formatFeaturedValue(row[iApplied]))+'</span></div>';
+      }
+      if(iAccepted>=0 && row[iAccepted]!==""){
+        html += '<div class="house-featured-item"><span class="house-featured-label">Accepted</span><span class="house-featured-value">'+escapeHtml(formatFeaturedValue(row[iAccepted]))+'</span></div>';
+      }
+      html += '</div>';
+    }
 
     html += '<div class="house-stats">';
     if(iPrice>=0 && row[iPrice]) html += '<div class="hstat"><span class="hstat-num">'+escapeHtml(row[iPrice])+'</span><span class="hstat-label">rent</span></div>';
@@ -888,10 +899,6 @@ function renderHouseList(table, tabConfig){
     applyToViewFilters();
   } else {
     containerEl.innerHTML = buildHouseCardsHtml(table.rows, headers, tabConfig, cols);
-  }
-
-  if(tabConfig.key === "toview"){
-    updateHouseMap(table.rows, headers, cols);
   }
 }
 
@@ -964,7 +971,6 @@ function applyToViewFilters(){
     var v = chip.getAttribute("data-filter-value");
     chip.classList.toggle("active", toViewFilters[g] === v);
   });
-  updateHouseMap(filtered, table.headers, cols);
 }
 
 document.addEventListener("click", function(e){
@@ -981,113 +987,6 @@ document.addEventListener("click", function(e){
     applyToViewFilters();
   }
 });
-
-// ---- To View map ----
-var houseMapInstance = null;
-var houseMapMarkers = [];
-var GEOCODE_CACHE_KEY = "move_planner_geocode_cache_v1";
-var geocodeCache = {};
-try{ geocodeCache = JSON.parse(localStorage.getItem(GEOCODE_CACHE_KEY)) || {}; }catch(e){ geocodeCache = {}; }
-var geocodeQueue = [];
-var geocodeBusy = false;
-
-function ensureHouseMap(){
-  if(houseMapInstance) return houseMapInstance;
-  if(typeof L === "undefined") return null;
-  var el = document.getElementById("house-map");
-  if(!el) return null;
-  houseMapInstance = L.map(el, { scrollWheelZoom: false }).setView([30.2672, -97.7431], 10);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap contributors"
-  }).addTo(houseMapInstance);
-  return houseMapInstance;
-}
-
-window.focusHouseCard = function(cardId){
-  var card = document.getElementById(cardId);
-  if(!card) return;
-  card.scrollIntoView({ behavior: "smooth", block: "center" });
-  card.classList.add("just-focused");
-  setTimeout(function(){ card.classList.remove("just-focused"); }, 1800);
-};
-
-function geocodeAddressKey(row, cols){
-  var addr = cols.iAddress>=0 ? (row[cols.iAddress]||"").toString().trim() : "";
-  var city = cols.iCity>=0 ? (row[cols.iCity]||"").toString().trim() : "";
-  if(!addr && !city) return null;
-  return [addr, city].filter(Boolean).join(", ");
-}
-
-function queueGeocode(query, onDone){
-  if(geocodeCache[query] !== undefined){ onDone(geocodeCache[query]); return; }
-  geocodeQueue.push({ query: query, onDone: onDone });
-  processGeocodeQueue();
-}
-
-function processGeocodeQueue(){
-  if(geocodeBusy || !geocodeQueue.length) return;
-  geocodeBusy = true;
-  var item = geocodeQueue.shift();
-  fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&q=" + encodeURIComponent(item.query))
-    .then(function(res){ return res.json(); })
-    .then(function(data){
-      var result = (data && data[0]) ? { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) } : null;
-      geocodeCache[item.query] = result;
-      try{ localStorage.setItem(GEOCODE_CACHE_KEY, JSON.stringify(geocodeCache)); }catch(e){}
-      item.onDone(result);
-    })
-    .catch(function(){ item.onDone(null); })
-    .finally(function(){
-      geocodeBusy = false;
-      setTimeout(processGeocodeQueue, 1100);
-    });
-}
-
-function updateHouseMap(rows, headers, cols){
-  var hintEl = document.getElementById("house-map-hint");
-  var map = ensureHouseMap();
-  if(!map){
-    if(hintEl) hintEl.textContent = "";
-    return;
-  }
-  houseMapMarkers.forEach(function(m){ map.removeLayer(m); });
-  houseMapMarkers = [];
-
-  var withLocation = rows.filter(function(row){ return geocodeAddressKey(row, cols); });
-  if(!withLocation.length){
-    if(hintEl) hintEl.textContent = "Add addresses or cities to see them on the map.";
-    return;
-  }
-  var pending = withLocation.length;
-  var placed = 0;
-  if(hintEl) hintEl.textContent = "Locating " + pending + " " + (pending===1?"property":"properties") + "…";
-
-  withLocation.forEach(function(row){
-    var key = geocodeAddressKey(row, cols);
-    queueGeocode(key, function(loc){
-      pending--;
-      if(loc){
-        placed++;
-        var marker = L.marker([loc.lat, loc.lng]).addTo(map);
-        var addr = cols.iAddress>=0 ? (row[cols.iAddress]||"") : "";
-        var city = cols.iCity>=0 ? (row[cols.iCity]||"") : "";
-        var label = escapeHtml(addr || city || ("Row "+row._row));
-        var cardId = "house-card-toview-"+row._row;
-        marker.bindPopup('<a href="javascript:void(0)" onclick="focusHouseCard(\''+cardId+'\')">'+label+'</a>');
-        marker.on("click", function(){ window.focusHouseCard(cardId); });
-        houseMapMarkers.push(marker);
-        if(houseMapMarkers.length){
-          var group = L.featureGroup(houseMapMarkers);
-          map.fitBounds(group.getBounds().pad(0.2));
-        }
-      }
-      if(pending<=0 && hintEl){
-        hintEl.textContent = placed ? (placed + " of " + withLocation.length + " properties mapped.") : "Couldn't locate these addresses.";
-      }
-    });
-  });
-}
 
 function mergeChecklistFromSheet(table){
   var headers = table.headers;
