@@ -176,6 +176,31 @@
   .move-back{background:var(--surface);border:1px solid var(--border-strong);color:var(--text-secondary);}
   .house-card-moving{opacity:.55;pointer-events:none;}
   .move-status{font-size:12px;color:var(--text-muted);font-style:italic;padding:9px 0;}
+  .mv-hero{margin:14px 20px 0;padding:16px 18px;border-radius:16px;background:linear-gradient(135deg, var(--accent) 0%, #6a8ffc 100%);color:#fff;}
+  .mv-hero-top{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:rgba(255,255,255,.82);margin-bottom:10px;}
+  .mv-hero-top .reset-btn{color:#fff;opacity:.85;font-size:11.5px;}
+  .mv-progress-track{background:rgba(255,255,255,.25);border-radius:8px;height:10px;overflow:hidden;}
+  .mv-progress-fill{height:100%;width:0;border-radius:8px;background:#fff;transition:width .4s ease;}
+  .mv-progress-text{margin:8px 0 0;font-size:12.5px;color:rgba(255,255,255,.92);}
+  .mv-phase{margin:14px 20px 0;border:1px solid var(--border);border-radius:16px;background:var(--surface-alt);overflow:hidden;}
+  .mv-phase.pinned{border-left:3px solid var(--accent);}
+  .mv-phase-head{display:flex;align-items:center;gap:10px;padding:13px 14px;cursor:pointer;user-select:none;}
+  .mv-phase-head h3{margin:0;font-size:13.5px;font-weight:600;flex:1;letter-spacing:-.005em;}
+  .mv-phase-mini{width:50px;height:6px;background:var(--border);border-radius:6px;overflow:hidden;flex-shrink:0;}
+  .mv-phase-mini i{display:block;height:100%;width:0;background:var(--green);transition:width .4s ease;}
+  .mv-phase-count{font-size:11px;color:var(--text-muted);min-width:32px;text-align:right;font-variant-numeric:tabular-nums;}
+  .mv-phase-chev{font-size:10px;color:var(--text-muted);transition:transform .2s;flex-shrink:0;}
+  .mv-phase.collapsed .mv-phase-chev{transform:rotate(-90deg);}
+  .mv-phase.collapsed .mv-items{display:none;}
+  .mv-phase.collapsed .mv-phase-note{display:none;}
+  .mv-phase-note{padding:0 14px 10px;margin:-4px 0 0;font-size:11px;color:var(--text-muted);font-style:italic;}
+  .mv-items{padding:0 14px 8px;}
+  .mv-item{display:flex;gap:10px;padding:9px 0;border-top:0.5px solid var(--border);align-items:flex-start;cursor:pointer;}
+  .mv-item:first-child{border-top:none;}
+  .mv-item input{width:18px;height:18px;flex-shrink:0;accent-color:var(--green);margin-top:1px;cursor:pointer;}
+  .mv-item-text{font-size:13px;line-height:1.4;}
+  .mv-item.done .mv-item-text{color:var(--text-muted);text-decoration:line-through;text-decoration-color:var(--border-strong);}
+  .mv-item-hint{display:block;font-size:11px;color:var(--text-muted);font-style:italic;margin-top:1px;text-decoration:none;}
 </style>
 </head>
 <body>
@@ -212,6 +237,7 @@
     <button class="tab-btn" data-tab="timeline">Timeline</button>
     <button class="tab-btn" data-tab="countdown">Countdown</button>
     <button class="tab-btn" data-tab="houses">Houses</button>
+    <button class="tab-btn" data-tab="move">Move</button>
   </div>
 
   <div id="view-checklist">
@@ -303,6 +329,18 @@
     <div id="houses-body-toview"><p class="empty-state">Connect your Google Sheet to see your houses here.</p></div>
     <div id="houses-body-nodecision" style="display:none;"><p class="empty-state">Connect your Google Sheet to see your houses here.</p></div>
     <div id="houses-body-yesdecision" style="display:none;"><p class="empty-state">Connect your Google Sheet to see your houses here.</p></div>
+  </div>
+
+  <div id="view-move" style="display:none;">
+    <div class="mv-hero">
+      <div class="mv-hero-top">
+        <span id="mv-progress-text">0 of 0 done</span>
+        <button class="reset-btn" id="mv-reset-btn">Reset all</button>
+      </div>
+      <div class="mv-progress-track"><div class="mv-progress-fill" id="mv-progress-fill"></div></div>
+    </div>
+    <p class="hint">Weekday evenings: small fast carloads. Weekends: big truck + straps loads, shop setup, storage runs, and anything needing a helper.</p>
+    <div id="mv-body"></div>
   </div>
 
   <footer>Saved automatically in this browser. Nothing is sent anywhere unless you connect Google Sheets.</footer>
@@ -490,7 +528,7 @@ document.addEventListener("change", function(e){
   }
 });
 
-var TAB_VIEWS = ["checklist","timeline","countdown","houses"];
+var TAB_VIEWS = ["checklist","timeline","countdown","houses","move"];
 document.querySelectorAll(".tab-btn").forEach(function(btn){
   btn.addEventListener("click", function(){
     document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.remove("active"); });
@@ -1358,6 +1396,191 @@ document.getElementById("reset-btn").addEventListener("click", function(){
 renderChecklist();
 renderTimeline();
 updateProgress();
+
+// ---------------------------------------------------------------- Move tab
+var MOVE_DATA = [
+  { pin:true, title:"Phase 0 — before anything goes in", note:"Weekend block, empty house", items:[
+    "Disinfect the whole new house (empty, before move-in)",
+    "Disinfect the new garage before shop setup",
+    "Set aside toolkit: dolly, straps, moving blankets, 2 coolers, extension cords, basic toolbox, first aid + fire blanket",
+    "Keep a cleaning kit back for old-place move-out",
+    "Lock in the new Austin storage unit",
+    "Pull empty bins + moving bags from the Austin storage unit",
+    "Label all bins by wave (W1, W2, …)",
+    "Grab garbage bags for hanging clothes (skip bins for those)",
+    "Roll the garage AC into the new garage and run it"
+  ]},
+  { pin:true, title:"Garage / Shop — early project", note:"AC first, then shelves, then tools", items:[
+    "Laser accessory shelves (×3) + 3 garage shelves (paint / epoxy / dog accessories)",
+    "Pegboard + hand tools (screwdrivers, sander, hammers)",
+    "Clamps (all sizes) + toolbox",
+    "Workbench",
+    "Steam-bending box (strap upright)",
+    "Scroll saw",
+    ["Laser engraver", "move yourself, cushioned in the cab"],
+    "Power tools from Austin storage → garage (miter saw, etc.)",
+    "Shop bags (2) + milk cartons (2)",
+    ["Epoxy + paint", "keep in A/C cab, into shade fast"]
+  ]},
+  { title:"Wave 1 — first out (dead weight)", items:[
+    ["Coats by front door + all cold-weather clothes", "garbage bags, keep out of hot truck bed"],
+    "Garage heater",
+    "All wall pictures (3 bedroom, 3 living room, bathroom, office, 3 garage)",
+    "Decorative clock + rarely-used garage clock",
+    "All fake plants (wall + shelf) + framed diploma",
+    "2 bedroom decorative shelves + low-profile bookcase decor + 4 woven bins",
+    "Party / entertainment plates + outdoor drink cover",
+    "Spare bedding, spare towels, unused curtain",
+    "Spare paper towels / TP / tissues (leave a small supply)",
+    "4 misc containers, bowling ball, iron, spare keyboard",
+    "Books + games from office bookshelf",
+    "Scrap wood",
+    "Load into suitcases (4), duffels (4), shop bags, milk cartons"
+  ]},
+  { title:"Wave 2 — early-mid (occasional)", items:[
+    "Dresser TV, living room TV, entertainment center, soundbar, Xbox, desk sound system",
+    "Standalone tower PC, walking pad treadmill",
+    "Bedroom rug, bags+shoes bin, cables bin",
+    "Bathroom cabinet extras (keep a small first-aid kit) + Drano/toilet cleaner (keep one set for old place)",
+    "Battery container, WetJet pads, green carpet cleaner, one wet/dry vac",
+    "Extra glasses/mugs/plates (keep 1–2 each), rolling pin, grill thermometer, cookie sheets",
+    "Mail sorter, decorative cutting board, misc sink items, washing pods",
+    "2 sporadic chairs, small whiteboard, dumbbells (adjustable + 20 lb), garage wet/dry vac, bench, large ladder",
+    ["Bring dog gate to the house early", "Waffles safe zone during chaos"],
+    "2 spare dog beds, stool"
+  ]},
+  { title:"Storage nodes", note:"One relay, one round-trip", items:[
+    "Move Austin storage contents to new unit — wood + Etsy inventory STAY in storage",
+    "San Antonio run: rent small truck, coordinate with Mom, load in SA",
+    "SA load: Etsy marketplace bins, lawnmower + lawn equipment, dining table",
+    "Pack SA load in cardboard (leave / break down there — one-way)",
+    "Line up help to unload the dining table at the Austin end"
+  ]},
+  { title:"Wave 3 — mid-late (hobby, business, bulk kitchen)", items:[
+    "3D printer + stand + filament, pegboard + 3D accessories (+ 2 from kitchen)",
+    ["Filing cabinet + Etsy packing supplies", "set up FIRST at the new place"],
+    "Office bookshelf (supplies, printer, shredder), whiteboard calendar",
+    "Dog kennel, dog sprayer, accent chair, coffee table",
+    "Living room lamp + small side table, both bedroom side tables + lamps",
+    "Plant stand",
+    "Bike on trainer + small TV on mobile stand + bike helmet",
+    "Bulk kitchen: pots/pans (keep 1 each), Tupperware, mixing bowls, strainers, measuring cups, shakers, cutting trays, water containers, chopsticks/foil, bag clips, extra utensils, utensil holder, spoon rest"
+  ]},
+  { title:"Wave 4 — near the end (near-daily)", items:[
+    "Dresser (after shifting current clothes)",
+    ["Current clothes + dirty clothes bin", "t-shirts, jeans, sweatpants, workshop pants, bike shorts — garbage bags"],
+    "Daily bathroom: shampoo, conditioner, face wash, toothpaste, lotion, counter container, trash can",
+    "Waffles: food bowl, water bowl, day bed, toy bin, separate dog bed",
+    "2–3 blankets (keep 1 for the floor), paper towel holder",
+    ["All 7 live plants", "single careful trip, water them"],
+    "Trash can"
+  ]},
+  { title:"Wave 5 — last (daily anchors)", items:[
+    "Couch",
+    "Desk + 2 monitors, notebook, phone charger",
+    "One plate/mug/glass/utensil set, sponge, dish soap, drying rack, hand sanitizer",
+    ["Daily meds: bathroom shelves + pullout meds drawer", "keep on you"],
+    ["Work + personal laptops", "carry personally"],
+    "Travel toiletry kit"
+  ]},
+  { pin:true, title:"Final trip", items:[
+    ["Fridge + freezer food", "coolers, move fast"],
+    ["Mattress", "very last thing out"]
+  ]}
+];
+
+var MOVE_KEY = "move_planner_move_v1";
+var moveState = {};
+try{ moveState = JSON.parse(localStorage.getItem(MOVE_KEY)) || {}; }catch(e){ moveState = {}; }
+function saveMoveState(){ localStorage.setItem(MOVE_KEY, JSON.stringify(moveState)); }
+
+function moveItemId(p, i){ return p+"_"+i; }
+
+function renderMoveTab(){
+  var html = "";
+  MOVE_DATA.forEach(function(phase, p){
+    var itemsHtml = phase.items.map(function(it, i){
+      var label = Array.isArray(it) ? it[0] : it;
+      var hint = Array.isArray(it) ? it[1] : null;
+      var key = moveItemId(p, i);
+      var isDone = !!moveState[key];
+      return '<div class="mv-item'+(isDone?' done':'')+'" data-key="'+key+'">'
+        + '<input type="checkbox" data-key="'+key+'"'+(isDone?' checked':'')+'>'
+        + '<span class="mv-item-text">'+escapeHtml(label)+(hint?'<span class="mv-item-hint">'+escapeHtml(hint)+'</span>':'')+'</span>'
+        + '</div>';
+    }).join('');
+    html += '<div class="mv-phase'+(phase.pin?' pinned':'')+'" data-phase="'+p+'">'
+      + '<div class="mv-phase-head">'
+      + '<h3>'+escapeHtml(phase.title)+'</h3>'
+      + '<span class="mv-phase-mini"><i></i></span>'
+      + '<span class="mv-phase-count"></span>'
+      + '<span class="mv-phase-chev">&#9660;</span>'
+      + '</div>'
+      + (phase.note ? '<p class="mv-phase-note">'+escapeHtml(phase.note)+'</p>' : '')
+      + '<div class="mv-items">'+itemsHtml+'</div>'
+      + '</div>';
+  });
+  document.getElementById("mv-body").innerHTML = html;
+  updateMoveProgress();
+}
+
+function updateMoveProgress(){
+  var total = 0, doneCount = 0;
+  document.querySelectorAll(".mv-phase").forEach(function(sec){
+    var items = sec.querySelectorAll(".mv-item");
+    var d = sec.querySelectorAll(".mv-item.done").length;
+    total += items.length;
+    doneCount += d;
+    var pct = items.length ? Math.round(d/items.length*100) : 0;
+    var mini = sec.querySelector(".mv-phase-mini i");
+    if(mini) mini.style.width = pct+"%";
+    var count = sec.querySelector(".mv-phase-count");
+    if(count) count.textContent = d+"/"+items.length;
+  });
+  var pct = total ? Math.round(doneCount/total*100) : 0;
+  var fill = document.getElementById("mv-progress-fill");
+  if(fill) fill.style.width = pct+"%";
+  var text = document.getElementById("mv-progress-text");
+  if(text) text.textContent = doneCount+" of "+total+" done ("+pct+"%)";
+}
+
+function setMoveChecked(key, checked){
+  if(checked){ moveState[key] = 1; } else { delete moveState[key]; }
+  saveMoveState();
+  var row = document.querySelector('.mv-item[data-key="'+key+'"]');
+  if(row) row.classList.toggle("done", checked);
+  var checkbox = document.querySelector('input[data-key="'+key+'"]');
+  if(checkbox) checkbox.checked = checked;
+  updateMoveProgress();
+}
+
+document.addEventListener("click", function(e){
+  var item = e.target.closest && e.target.closest(".mv-item");
+  if(item && e.target.tagName !== "INPUT"){
+    var key = item.getAttribute("data-key");
+    setMoveChecked(key, !moveState[key]);
+    return;
+  }
+  var phaseHead = e.target.closest && e.target.closest(".mv-phase-head");
+  if(phaseHead){
+    phaseHead.closest(".mv-phase").classList.toggle("collapsed");
+  }
+});
+
+document.addEventListener("change", function(e){
+  if(e.target.matches && e.target.matches('.mv-item input[type="checkbox"]')){
+    setMoveChecked(e.target.getAttribute("data-key"), e.target.checked);
+  }
+});
+
+document.getElementById("mv-reset-btn").addEventListener("click", function(){
+  if(!confirm("Uncheck everything on the Move tab?")) return;
+  moveState = {};
+  saveMoveState();
+  renderMoveTab();
+});
+
+renderMoveTab();
 </script>
 </body>
 </html>

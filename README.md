@@ -2,10 +2,25 @@
 
 A single-file web app for tracking a move: a checklist grouped by track
 (Prep, House, Storage, Mom's), a scrollable gantt-style timeline, a
-countdown to a date you choose, and a Houses tab that can sync live with
-a Google Sheet. Checking off a task updates its timeline bar. Progress is
+countdown to a date you choose, a Houses tab that can sync live with
+a Google Sheet, and a Move tab with the full apartment/garage/storage
+packing order. Checking off a task updates its timeline bar. Progress is
 saved in the browser's local storage, per device, and mirrored to Google
-Sheets if you connect it.
+Sheets if you connect it (Houses and the main Checklist only — the Move
+tab is local-only, see below).
+
+## Move tab
+
+A separate, self-contained checklist for the physical packing order —
+nine phases from "Phase 0" (disinfect before anything goes in) through
+the garage/shop setup, five waves sorted least-needed-first, the
+storage/San Antonio runs, and a final trip that ends with the mattress.
+Tap any row to check it off; each phase shows its own mini progress bar
+and count, and tapping a phase title collapses it so you can focus on
+what's current. "Reset all" clears just this tab for your next move.
+It saves to its own local storage key (`move_planner_move_v1`) — separate
+from the main Checklist tab and not synced to Google Sheets, since it's
+a one-time packing sequence rather than an ongoing tracked list.
 
 ## Deploy with GitHub Pages
 
