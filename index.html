@@ -971,7 +971,7 @@ function buildHouseCardsHtml(rows, headers, tabConfig, cols){
         + '</div>';
     } else if(tabConfig.key === "closed"){
       html += '<div class="house-move-actions">'
-        + '<button type="button" class="move-btn move-back" data-row="'+row._row+'" data-house-tab="closed" data-move-to="yesdecision">&#8617; Move back to Yes</button>'
+        + '<button type="button" class="move-btn move-yes" data-row="'+row._row+'" data-house-tab="closed" data-move-to="yesdecision">Return to Yes</button>'
         + '</div>';
     } else {
       html += '<div class="house-move-actions">'
