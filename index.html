@@ -176,8 +176,8 @@
   .move-btn{flex:1;border:none;border-radius:10px;padding:9px 0;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;}
   .move-no{background:var(--soft-red-bg);color:var(--soft-red-text);}
   .move-yes{background:var(--green-bg);color:var(--green);}
-  .move-back{background:var(--surface);border:1px solid var(--accent);color:var(--accent);}
-  .move-closed{background:var(--surface-alt);border:1px solid var(--border-strong);color:var(--text-secondary);}
+  .move-back{background:#FEF9C3;color:#A16207;}
+  .move-closed{background:var(--soft-red-bg);color:var(--soft-red-text);}
   .house-card-moving{opacity:.55;pointer-events:none;}
   .move-status{font-size:12px;color:var(--text-muted);font-style:italic;padding:9px 0;}
   .mv-hero{margin:14px 20px 0;padding:16px 18px;border-radius:16px;background:linear-gradient(135deg, var(--accent) 0%, #6a8ffc 100%);color:#fff;}
@@ -966,7 +966,7 @@ function buildHouseCardsHtml(rows, headers, tabConfig, cols){
         + '</div>';
     } else if(tabConfig.key === "yesdecision"){
       html += '<div class="house-move-actions">'
-        + '<button type="button" class="move-btn move-back" data-row="'+row._row+'" data-house-tab="yesdecision" data-move-to="toview">&#8617; Move back to To View</button>'
+        + '<button type="button" class="move-btn move-back" data-row="'+row._row+'" data-house-tab="yesdecision" data-move-to="toview">Return to View</button>'
         + '<button type="button" class="move-btn move-closed" data-row="'+row._row+'" data-house-tab="yesdecision" data-move-to="closed">Closed</button>'
         + '</div>';
     } else if(tabConfig.key === "closed"){
