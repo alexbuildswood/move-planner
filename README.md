@@ -84,18 +84,20 @@ project — that sounds heavier than it is; it's about 10 minutes.
      struck through.
    - `Yes Decision` — houses you're pursuing. Shows in the "Yes"
      sub-tab.
+   - `Closed` — houses you applied for and lost, or that got rented
+     before you could apply. Shows in the "Closed" sub-tab.
    - `Checklist` — with a `Done` and `Order` column; the app matches
      checklist rows by Order number.
 
-   Each of the three house tabs can have its own set of columns — the
+   Each of the four house tabs can have its own set of columns — the
    app reads whatever headers are actually there on row 1 and figures
    out Address/Price/City/MLS Link/Zillow Link/Toured?/Interest/Notes/
-   Live Notes automatically by name (case-insensitive). Any column it
-   doesn't recognize still shows on the card as a plain label/value
-   line, so new columns you add always show up without needing an app
-   update.
+   Live Notes/Applied/Accepted/Reason automatically by name
+   (case-insensitive). Any column it doesn't recognize still shows on
+   the card as a plain label/value line, so new columns you add always
+   show up without needing an app update.
 
-Across all three tabs, "Like" interest values get a yellow highlight, city
+Across all four tabs, "Like" interest values get a yellow highlight, city
 tags are automatically color-coded (same city always gets the same color),
 and blank addresses no longer show as "Untitled" — they fall back to the
 city name, or "Row N" if both are blank.
@@ -111,23 +113,36 @@ Interest=Like).
 
 Every To View card has **No** and **Yes** buttons. Tapping one moves that
 house immediately — it's written to the No Decision or Yes Decision tab in
-your sheet and removed from To View. No and Yes Decision cards each have a
-"&#8617; Move back to To View" button in case you change your mind; nothing
-is ever deleted for good, a move just relocates the row between tabs.
+your sheet and removed from To View.
+
+Yes Decision cards have two buttons: "&#8617; Move back to To View" and
+**Closed**. Use Closed once you've applied and lost the house, or it got
+rented before you could apply — it moves the row to the Closed tab. No
+Decision and Closed cards each have their own "move back" button (Closed
+cards move back to Yes Decision) in case you change your mind; nothing is
+ever deleted for good, a move just relocates the row between tabs.
 
 A move copies over whatever fields match by column name or by type
 (address, city, price, interest, notes, links, etc.) between tabs, so it
 works even though each tab has different columns. Columns that only exist
-on the destination tab (like Applied/Accepted on Yes Decision) start blank.
-While a move is in progress the card shows "Moving…" and is disabled for a
-moment.
+on the destination tab (like Applied/Accepted, or Reason on Closed) start
+blank. While a move is in progress the card shows "Moving…" and is
+disabled for a moment.
 
-## Applied / Accepted (Yes Decision tab only)
+## Applied / Accepted (Yes Decision and Closed tabs)
 
-If your `Yes Decision` tab has columns named `Applied` or `Accepted`, the
-app shows them as checkboxes near the top of each card — check them off as
-you apply and hear back, and it writes TRUE/FALSE straight to those columns
-in your sheet.
+If your `Yes Decision` or `Closed` tab has columns named `Applied` or
+`Accepted`, the app shows them as checkboxes near the top of each card —
+check them off as you apply and hear back, and it writes TRUE/FALSE
+straight to those columns in your sheet.
+
+## Reason (Closed tab only)
+
+If your `Closed` tab has a column with "reason" in its name (e.g.
+`Reason`), the app shows two tappable chips on each Closed card —
+**Applied & lost** and **Rented before I could apply**. Tap one to record
+why that house closed; tap it again to clear it. It writes the chosen text
+straight to that column in your sheet.
 
 Notes:
 - The Spreadsheet ID field is pre-filled with your Move_Plan sheet; only
@@ -135,10 +150,7 @@ Notes:
 - You'll need to click Connect again each time you open the app in a
   new browser session — the sign-in isn't kept forever, only your
   Client ID and Spreadsheet ID are remembered.
-- Checking a box in the app writes back to whichever of the three tabs
-  that house lives in, and checking a box in the sheet shows up in the
-  app next time you connect or hit Refresh. Same for Live Notes.
-  Unlabeled or "helper" columns in your sheet are ignored.
-- Moving a house between "To View," "No Decision," and "Yes Decision"
-  is done by cutting/pasting its row into the other tab in Google
-  Sheets itself — the app doesn't move rows between tabs for you.
+- Checking a box in the app writes back to whichever house tab that
+  house lives in, and checking a box in the sheet shows up in the app
+  next time you connect or hit Refresh. Same for Live Notes. Unlabeled
+  or "helper" columns in your sheet are ignored.

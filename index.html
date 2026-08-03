@@ -126,11 +126,14 @@
   .house-subtabs{display:flex;gap:4px;margin:14px 20px 4px;background:var(--surface-alt);border:1px solid var(--border);border-radius:15px;padding:3px;}
   .house-subtab-btn{flex:1;border:none;background:transparent;padding:7px 0;font-size:12.5px;color:var(--text-secondary);border-radius:11px;cursor:pointer;font-family:inherit;}
   .house-subtab-btn.active{background:var(--surface);color:var(--text);font-weight:600;box-shadow:0 2px 10px rgba(94,74,180,0.14);}
-  #houses-body-toview,#houses-body-nodecision,#houses-body-yesdecision{padding:8px 0 12px;}
+  #houses-body-toview,#houses-body-nodecision,#houses-body-yesdecision,#houses-body-closed{padding:8px 0 12px;}
   .house-card{margin:10px 20px;padding:16px 18px;border:1px solid var(--border);border-radius:18px;background:var(--surface-alt);box-shadow:0 10px 26px rgba(94,74,180,0.12);}
   .house-card.house-passed{background:var(--soft-red-bg);border-color:rgba(224,114,138,0.35);border-left:3px solid var(--soft-red);padding-left:17px;}
   .house-card.house-passed .house-address{color:var(--soft-red-text);}
   .house-card.house-passed .hstat-num{color:var(--soft-red-text);}
+  .house-card.house-closed{background:var(--surface-alt);border-left:3px solid var(--text-muted);padding-left:17px;}
+  .house-card.house-closed .house-address{color:var(--text-secondary);}
+  .house-reason{margin-top:12px;}
   .interest-like{background:#FEF9C3;color:#A16207;}
   .house-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
   .house-toured{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-secondary);cursor:pointer;white-space:nowrap;order:2;}
@@ -174,6 +177,7 @@
   .move-no{background:var(--soft-red-bg);color:var(--soft-red-text);}
   .move-yes{background:var(--green-bg);color:var(--green);}
   .move-back{background:var(--surface);border:1px solid var(--border-strong);color:var(--text-secondary);}
+  .move-closed{background:var(--surface-alt);border:1px solid var(--border-strong);color:var(--text-secondary);}
   .house-card-moving{opacity:.55;pointer-events:none;}
   .move-status{font-size:12px;color:var(--text-muted);font-style:italic;padding:9px 0;}
   .mv-hero{margin:14px 20px 0;padding:16px 18px;border-radius:16px;background:linear-gradient(135deg, var(--accent) 0%, #6a8ffc 100%);color:#fff;}
@@ -308,6 +312,7 @@
       <button class="house-subtab-btn active" data-house-tab="toview">To View</button>
       <button class="house-subtab-btn" data-house-tab="nodecision">No</button>
       <button class="house-subtab-btn" data-house-tab="yesdecision">Yes</button>
+      <button class="house-subtab-btn" data-house-tab="closed">Closed</button>
     </div>
     <div id="toview-extras">
       <div class="house-filters" id="house-filters">
@@ -329,6 +334,7 @@
     <div id="houses-body-toview"><p class="empty-state">Connect your Google Sheet to see your houses here.</p></div>
     <div id="houses-body-nodecision" style="display:none;"><p class="empty-state">Connect your Google Sheet to see your houses here.</p></div>
     <div id="houses-body-yesdecision" style="display:none;"><p class="empty-state">Connect your Google Sheet to see your houses here.</p></div>
+    <div id="houses-body-closed" style="display:none;"><p class="empty-state">Connect your Google Sheet to see your houses here.</p></div>
   </div>
 
   <div id="view-move" style="display:none;">
@@ -540,7 +546,7 @@ document.querySelectorAll(".tab-btn").forEach(function(btn){
   });
 });
 
-var HOUSE_TAB_KEYS = ["toview","nodecision","yesdecision"];
+var HOUSE_TAB_KEYS = ["toview","nodecision","yesdecision","closed"];
 document.querySelectorAll(".house-subtab-btn").forEach(function(btn){
   btn.addEventListener("click", function(){
     document.querySelectorAll(".house-subtab-btn").forEach(function(b){ b.classList.remove("active"); });
@@ -646,12 +652,13 @@ var checklistRowBySheet = {};
 var movingHouseKeys = {};
 var sheetIdByName = {};
 
-// The three house-tracking tabs in the Google Sheet. sheetName must match
+// The house-tracking tabs in the Google Sheet. sheetName must match
 // the tab name exactly (case-sensitive) as it appears in Google Sheets.
 var HOUSE_TABS = [
   { key: "toview", sheetName: "To View", bodyId: "houses-body-toview", greyAll: false },
   { key: "nodecision", sheetName: "No Decision", bodyId: "houses-body-nodecision", greyAll: true },
-  { key: "yesdecision", sheetName: "Yes Decision", bodyId: "houses-body-yesdecision", greyAll: false }
+  { key: "yesdecision", sheetName: "Yes Decision", bodyId: "houses-body-yesdecision", greyAll: false },
+  { key: "closed", sheetName: "Closed", bodyId: "houses-body-closed", greyAll: false }
 ];
 function tabByKey(key){
   for(var i=0;i<HOUSE_TABS.length;i++){ if(HOUSE_TABS[i].key === key) return HOUSE_TABS[i]; }
@@ -824,11 +831,12 @@ function computeHouseColumns(headers){
   var iZillow = findCol(headers,[/zillow/i]);
   var iApplied = findCol(headers,[/applied/i]);
   var iAccepted = findCol(headers,[/accepted/i]);
-  var known = [iToured,iInterest,iPrice,iAddress,iCity,iType,iBeds,iBaths,iSqft,iNotes,iLiveNotes,iMls,iZillow,iApplied,iAccepted].filter(function(i){ return i>=0; });
+  var iReason = findCol(headers,[/reason/i]);
+  var known = [iToured,iInterest,iPrice,iAddress,iCity,iType,iBeds,iBaths,iSqft,iNotes,iLiveNotes,iMls,iZillow,iApplied,iAccepted,iReason].filter(function(i){ return i>=0; });
   return {
     iToured:iToured, iInterest:iInterest, iPrice:iPrice, iAddress:iAddress, iCity:iCity,
     iType:iType, iBeds:iBeds, iBaths:iBaths, iSqft:iSqft, iNotes:iNotes, iLiveNotes:iLiveNotes,
-    iMls:iMls, iZillow:iZillow, iApplied:iApplied, iAccepted:iAccepted, known:known
+    iMls:iMls, iZillow:iZillow, iApplied:iApplied, iAccepted:iAccepted, iReason:iReason, known:known
   };
 }
 
@@ -859,11 +867,13 @@ function classifyInterest(interest){
   return "";
 }
 
+var REASON_OPTIONS = ["Applied & lost", "Rented before I could apply"];
+
 function buildHouseCardsHtml(rows, headers, tabConfig, cols){
   var iToured=cols.iToured, iInterest=cols.iInterest, iPrice=cols.iPrice, iAddress=cols.iAddress,
       iCity=cols.iCity, iType=cols.iType, iBeds=cols.iBeds, iBaths=cols.iBaths, iSqft=cols.iSqft,
       iNotes=cols.iNotes, iLiveNotes=cols.iLiveNotes, iMls=cols.iMls, iZillow=cols.iZillow,
-      iApplied=cols.iApplied, iAccepted=cols.iAccepted, known=cols.known;
+      iApplied=cols.iApplied, iAccepted=cols.iAccepted, iReason=cols.iReason, known=cols.known;
 
   var html = "";
   rows.forEach(function(row){
@@ -874,10 +884,11 @@ function buildHouseCardsHtml(rows, headers, tabConfig, cols){
     var interest = iInterest>=0 ? (row[iInterest]||"") : "";
     var interestClass = classifyInterest(interest);
     var isPassed = !!tabConfig.greyAll;
+    var isClosed = tabConfig.key === "closed";
     var cardId = "house-card-"+tabConfig.key+"-"+row._row;
     var moving = isHouseMoving(tabConfig.key, row._row);
 
-    html += '<div class="house-card'+(isPassed ? ' house-passed' : '')+(moving ? ' house-card-moving' : '')+'" id="'+cardId+'" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'">';
+    html += '<div class="house-card'+(isPassed ? ' house-passed' : '')+(isClosed ? ' house-closed' : '')+(moving ? ' house-card-moving' : '')+'" id="'+cardId+'" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'">';
     html += '<div class="house-head"><p class="house-address">'+escapeHtml(address)+'</p>'
       + '<label class="house-toured"><input type="checkbox" class="toured-check" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'"'+(toured?' checked':'')+'>Toured</label></div>';
 
@@ -891,7 +902,7 @@ function buildHouseCardsHtml(rows, headers, tabConfig, cols){
     if(iType>=0 && row[iType]) html += '<span class="tag">'+escapeHtml(row[iType])+'</span>';
     html += '</div>';
 
-    if(tabConfig.key === "yesdecision" && (iApplied>=0 || iAccepted>=0)){
+    if((tabConfig.key === "yesdecision" || tabConfig.key === "closed") && (iApplied>=0 || iAccepted>=0)){
       html += '<div class="house-featured">';
       if(iApplied>=0){
         html += '<label class="house-featured-item house-featured-check"><span class="house-featured-label">Applied</span>'
@@ -902,6 +913,15 @@ function buildHouseCardsHtml(rows, headers, tabConfig, cols){
           + '<input type="checkbox" class="accepted-check" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'"'+(isTruthy(row[iAccepted])?' checked':'')+'></label>';
       }
       html += '</div>';
+    }
+
+    if(isClosed && iReason>=0){
+      var reasonVal = (row[iReason]||"").toString().trim();
+      html += '<div class="house-reason"><span class="house-notes-label">Reason</span><div class="filter-chip-row">';
+      html += REASON_OPTIONS.map(function(opt){
+        return '<button type="button" class="filter-chip reason-chip'+(reasonVal===opt?' active':'')+'" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'" data-reason-value="'+escapeHtml(opt)+'">'+escapeHtml(opt)+'</button>';
+      }).join('');
+      html += '</div></div>';
     }
 
     html += '<div class="house-stats">';
@@ -943,6 +963,15 @@ function buildHouseCardsHtml(rows, headers, tabConfig, cols){
       html += '<div class="house-move-actions">'
         + '<button type="button" class="move-btn move-no" data-row="'+row._row+'" data-house-tab="toview" data-move-to="nodecision">No</button>'
         + '<button type="button" class="move-btn move-yes" data-row="'+row._row+'" data-house-tab="toview" data-move-to="yesdecision">Yes</button>'
+        + '</div>';
+    } else if(tabConfig.key === "yesdecision"){
+      html += '<div class="house-move-actions">'
+        + '<button type="button" class="move-btn move-back" data-row="'+row._row+'" data-house-tab="yesdecision" data-move-to="toview">&#8617; Move back to To View</button>'
+        + '<button type="button" class="move-btn move-closed" data-row="'+row._row+'" data-house-tab="yesdecision" data-move-to="closed">Closed</button>'
+        + '</div>';
+    } else if(tabConfig.key === "closed"){
+      html += '<div class="house-move-actions">'
+        + '<button type="button" class="move-btn move-back" data-row="'+row._row+'" data-house-tab="closed" data-move-to="yesdecision">&#8617; Move back to Yes</button>'
         + '</div>';
     } else {
       html += '<div class="house-move-actions">'
@@ -1064,6 +1093,19 @@ document.addEventListener("click", function(e){
     var toKey = moveBtn.getAttribute("data-move-to");
     var moveRow = moveBtn.getAttribute("data-row");
     moveHouseToTab(fromKey, toKey, moveRow);
+    return;
+  }
+  var reasonChip = e.target.closest && e.target.closest(".reason-chip");
+  if(reasonChip){
+    var rRow = reasonChip.getAttribute("data-row");
+    var rTab = reasonChip.getAttribute("data-house-tab");
+    var rValue = reasonChip.getAttribute("data-reason-value");
+    var alreadyActive = reasonChip.classList.contains("active");
+    var newValue = alreadyActive ? "" : rValue;
+    reasonChip.closest(".house-reason").querySelectorAll(".reason-chip").forEach(function(c){
+      c.classList.toggle("active", !alreadyActive && c === reasonChip);
+    });
+    pushReasonToSheet(rRow, newValue, rTab);
   }
 });
 
@@ -1123,7 +1165,14 @@ function pushAcceptedToSheet(row, checked, tabKey){
   pushHouseCellToSheet(tabKey, row, iAccepted, checked);
 }
 
-// ---- Moving a house between To View / No Decision / Yes Decision ----
+function pushReasonToSheet(row, value, tabKey){
+  var table = housesTables[tabKey];
+  if(!table) return;
+  var iReason = findCol(table.headers,[/reason/i]);
+  pushHouseCellToSheet(tabKey, row, iReason, value);
+}
+
+// ---- Moving a house between house tabs (To View / No / Yes / Closed) ----
 function ensureSheetIds(){
   if(Object.keys(sheetIdByName).length) return Promise.resolve(sheetIdByName);
   return sheetsFetch("?fields=sheets.properties(sheetId,title)").then(function(data){
@@ -1156,14 +1205,16 @@ function extractRowFields(row, headers, cols){
     interest: cols.iInterest>=0 ? (row[cols.iInterest]||"") : "",
     toured: cols.iToured>=0 ? (row[cols.iToured]||"") : "",
     applied: cols.iApplied>=0 ? (row[cols.iApplied]||"") : "",
-    accepted: cols.iAccepted>=0 ? (row[cols.iAccepted]||"") : ""
+    accepted: cols.iAccepted>=0 ? (row[cols.iAccepted]||"") : "",
+    reason: cols.iReason>=0 ? (row[cols.iReason]||"") : ""
   };
 }
 
 var FEATURED_FIELD_BY_COL = {
   iAddress:"address", iCity:"city", iPrice:"price", iType:"type", iBeds:"beds",
   iBaths:"baths", iSqft:"sqft", iNotes:"notes", iLiveNotes:"liveNotes", iMls:"mls",
-  iZillow:"zillow", iInterest:"interest", iToured:"toured", iApplied:"applied", iAccepted:"accepted"
+  iZillow:"zillow", iInterest:"interest", iToured:"toured", iApplied:"applied", iAccepted:"accepted",
+  iReason:"reason"
 };
 
 function buildDestRowValues(fields, destHeaders, destCols){
