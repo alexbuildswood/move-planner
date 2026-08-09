@@ -13,7 +13,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root{
     --bg:#d9d4f8;
@@ -57,48 +56,10 @@
   .header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;}
   header h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.01em;}
   header p{margin:3px 0 0;font-size:13px;color:var(--text-secondary);}
-  .progress-ring-wrap{position:relative;width:56px;height:56px;flex-shrink:0;}
-  .progress-ring{transform:rotate(-90deg);}
-  .ring-track{fill:none;stroke:var(--surface-alt);stroke-width:5;}
-  .ring-fill{fill:none;stroke:url(#ringGrad);stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset .3s ease;}
-  .progress-ring-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--text);}
-  .progress-row{display:flex;align-items:center;justify-content:space-between;margin-top:14px;}
-  .progress-text{font-size:12.5px;color:var(--text-secondary);}
   .reset-btn{border:none;background:none;font-size:12.5px;color:var(--accent);cursor:pointer;padding:0;}
   .tabs{display:flex;gap:4px;margin:14px 20px;background:var(--surface-alt);border:1px solid var(--border);border-radius:15px;padding:3px;}
   .tab-btn{flex:1;border:none;background:transparent;padding:9px 0;font-size:13.5px;color:var(--text-secondary);border-radius:11px;cursor:pointer;font-family:inherit;}
   .tab-btn.active{background:var(--surface);color:var(--text);font-weight:600;box-shadow:0 2px 10px rgba(94,74,180,0.14);}
-  .toolbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px 8px;}
-  .toolbar label{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-secondary);cursor:pointer;}
-  .section-label{display:flex;align-items:center;gap:7px;padding:16px 20px 6px;font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.03em;}
-  .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-  .task-row{display:flex;gap:12px;padding:12px 20px;border-bottom:0.5px solid var(--border);align-items:flex-start;}
-  .task-row.done .task-title{text-decoration:line-through;color:var(--text-muted);}
-  .task-row.done .task-note,.task-row.done .tag-row{opacity:.5;}
-  .hide-done .task-row.done{display:none;}
-  .task-check{width:19px;height:19px;flex-shrink:0;accent-color:var(--green);margin-top:1px;cursor:pointer;}
-  .task-title{margin:0;font-size:14.5px;font-weight:500;}
-  .tag-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
-  .tag{font-size:10.5px;padding:2px 8px;border-radius:999px;background:var(--surface-alt);color:var(--text-secondary);white-space:nowrap;}
-  .task-note{margin:6px 0 0;font-size:11.5px;color:var(--text-muted);line-height:1.4;}
-  .empty-state{padding:40px 20px;text-align:center;color:var(--text-muted);font-size:13px;}
-  #view-timeline{padding-bottom:16px;}
-  .tl-wrap{display:flex;align-items:flex-start;}
-  .tl-labels{width:118px;flex-shrink:0;padding:0 8px 8px 20px;box-sizing:border-box;border-right:0.5px solid var(--border);background:var(--surface);}
-  .tl-scroll{overflow-x:auto;flex:1;min-width:0;padding:0 20px 8px 10px;-webkit-overflow-scrolling:touch;}
-  .tl-inner{position:relative;}
-  .tl-gridline{position:absolute;top:0;bottom:0;width:1px;background:var(--border);}
-  .tl-row-axis{height:20px;display:flex;align-items:flex-start;}
-  .tl-row-section{height:26px;display:flex;align-items:flex-end;padding-bottom:2px;box-sizing:border-box;}
-  .tl-row-task{height:26px;display:flex;align-items:center;}
-  .tl-label{font-size:11px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;}
-  .tl-section-label{font-size:11px;font-weight:600;color:var(--text-secondary);display:flex;align-items:center;gap:6px;width:100%;}
-  .tl-track{height:14px;background:var(--surface-alt);border-radius:4px;position:relative;flex-shrink:0;}
-  .tl-bar{position:absolute;top:0;height:100%;border-radius:4px;background:var(--text-muted);}
-  .tl-bar.done{background:var(--green);}
-  .tl-legend{display:flex;gap:14px;padding:10px 20px 0;font-size:11px;color:var(--text-secondary);}
-  .tl-legend span{display:inline-flex;align-items:center;}
-  .tl-legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;}
   .hint{margin:6px 20px 0;font-size:10.5px;color:var(--text-muted);}
   footer{padding:16px 20px 28px;text-align:center;font-size:11px;color:var(--text-muted);}
   .countdown-wrap{padding:28px 20px 8px;text-align:center;}
@@ -114,72 +75,6 @@
   .cd-form{padding:4px 20px 24px;border-top:0.5px solid var(--border);margin-top:8px;padding-top:18px;}
   .cd-form label{display:block;font-size:12px;color:var(--text-secondary);margin-bottom:5px;}
   .cd-form input[type="text"],.cd-form input[type="date"]{width:100%;padding:9px 10px;border:1px solid var(--border-strong);border-radius:8px;font-size:14px;font-family:inherit;margin-bottom:12px;color:var(--text);background:var(--surface);}
-  .gsync-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 20px;border-bottom:0.5px solid var(--border);flex-wrap:wrap;}
-  .gstatus{font-size:12px;color:var(--text-muted);}
-  .gstatus.connected{color:var(--green);font-weight:600;}
-  .gstatus.error{color:var(--soft-red-text);}
-  .mini-btn{border:1px solid var(--border-strong);background:var(--surface-alt);border-radius:999px;padding:6px 12px;font-size:12px;color:var(--text);cursor:pointer;font-family:inherit;}
-  .mini-btn.primary{background:linear-gradient(135deg, var(--accent), #6a8ffc);border-color:var(--accent);color:var(--accent-ink);font-weight:600;box-shadow:0 6px 18px rgba(124,92,250,0.35);}
-  .gcfg-panel{padding:14px 20px;border-bottom:0.5px solid var(--border);background:var(--surface-alt);}
-  .gcfg-panel label{display:block;font-size:11.5px;color:var(--text-secondary);margin-bottom:4px;}
-  .gcfg-panel input[type="text"]{width:100%;padding:8px 10px;border:1px solid var(--border-strong);border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:10px;color:var(--text);background:var(--surface);}
-  .house-subtabs{display:flex;gap:4px;margin:14px 20px 4px;background:var(--surface-alt);border:1px solid var(--border);border-radius:15px;padding:3px;}
-  .house-subtab-btn{flex:1;border:none;background:transparent;padding:7px 0;font-size:12.5px;color:var(--text-secondary);border-radius:11px;cursor:pointer;font-family:inherit;}
-  .house-subtab-btn.active{background:var(--surface);color:var(--text);font-weight:600;box-shadow:0 2px 10px rgba(94,74,180,0.14);}
-  #houses-body-toview,#houses-body-nodecision,#houses-body-yesdecision,#houses-body-closed{padding:8px 0 12px;}
-  .house-card{margin:10px 20px;padding:16px 18px;border:1px solid var(--border);border-radius:18px;background:var(--surface-alt);box-shadow:0 10px 26px rgba(94,74,180,0.12);}
-  .house-card.house-passed{background:var(--soft-red-bg);border-color:rgba(224,114,138,0.35);border-left:3px solid var(--soft-red);padding-left:17px;}
-  .house-card.house-passed .house-address{color:var(--soft-red-text);}
-  .house-card.house-passed .hstat-num{color:var(--soft-red-text);}
-  .house-card.house-closed{background:var(--surface-alt);border-left:3px solid var(--text-muted);padding-left:17px;}
-  .house-card.house-closed .house-address{color:var(--text-secondary);}
-  .house-reason{margin-top:12px;}
-  .interest-like{background:#FEF9C3;color:#A16207;}
-  .house-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
-  .house-toured{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-secondary);cursor:pointer;white-space:nowrap;order:2;}
-  .house-toured input{accent-color:var(--green);}
-  .house-address{margin:0;font-size:15px;font-weight:600;order:1;flex:1;}
-  .house-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
-  .interest-good{background:var(--green-bg);color:var(--green);}
-  .interest-mid{background:var(--warning-bg);color:var(--warning);}
-  .interest-bad{background:var(--soft-red-bg);color:var(--soft-red-text);}
-  .house-stats{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;}
-  .hstat{display:flex;flex-direction:column;}
-  .hstat-num{font-size:15px;font-weight:600;}
-  .hstat-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em;}
-  .house-notes{margin:12px 0 0;font-size:12.5px;color:var(--text-secondary);line-height:1.5;white-space:pre-line;}
-  .house-notes-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 4px;display:block;}
-  .house-live-notes{margin-top:2px;}
-  .live-notes-input{width:100%;min-height:64px;padding:8px 10px;border:1px solid var(--border-strong);border-radius:10px;font-size:12.5px;line-height:1.5;font-family:inherit;color:var(--text);background:var(--surface);resize:vertical;}
-  .live-notes-input:focus{outline:none;border-color:var(--accent);}
-  .live-notes-status{display:block;font-size:10.5px;color:var(--text-muted);margin-top:3px;min-height:13px;}
-  .live-notes-status.saving{color:var(--text-secondary);}
-  .live-notes-status.saved{color:var(--green);}
-  .house-extra{margin-top:10px;display:flex;flex-direction:column;gap:2px;}
-  .house-extra span{font-size:11px;color:var(--text-muted);}
-  .house-links{display:flex;gap:8px;margin-top:12px;}
-  .house-link{font-size:12px;color:var(--accent);text-decoration:none;border:1px solid var(--accent-bg);background:var(--accent-bg);padding:5px 10px;border-radius:999px;}
-  .house-filters{padding:10px 20px 6px;display:flex;flex-direction:column;gap:8px;}
-  .filter-group{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;}
-  .filter-label{font-size:10.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em;width:52px;flex-shrink:0;padding-top:5px;}
-  .filter-chip-row{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0;}
-  .filter-chip{border:1px solid var(--border-strong);background:var(--surface-alt);border-radius:999px;padding:4px 10px;font-size:11.5px;color:var(--text-secondary);cursor:pointer;font-family:inherit;}
-  .filter-chip.active{background:var(--accent-bg);border-color:var(--accent);color:var(--accent);font-weight:600;}
-  #filters-clear-btn{align-self:flex-start;margin-top:2px;}
-  .house-featured{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
-  .house-featured-item{display:flex;flex-direction:column;gap:2px;padding:8px 12px;border-radius:12px;background:var(--accent-bg);border:1px solid var(--border-strong);min-width:110px;}
-  .house-featured-label{font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
-  .house-featured-value{font-size:13.5px;color:var(--text);font-weight:600;}
-  .house-featured-check{flex-direction:row;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;min-width:0;}
-  .house-featured-check input{width:18px;height:18px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;}
-  .house-move-actions{display:flex;gap:8px;margin-top:14px;}
-  .move-btn{flex:1;border:none;border-radius:10px;padding:9px 0;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;}
-  .move-no{background:var(--soft-red-bg);color:var(--soft-red-text);}
-  .move-yes{background:var(--green-bg);color:var(--green);}
-  .move-back{background:#FEF9C3;color:#A16207;}
-  .move-closed{background:var(--soft-red-bg);color:var(--soft-red-text);}
-  .house-card-moving{opacity:.55;pointer-events:none;}
-  .move-status{font-size:12px;color:var(--text-muted);font-style:italic;padding:9px 0;}
   .mv-hero{margin:14px 20px 0;padding:16px 18px;border-radius:16px;background:linear-gradient(135deg, var(--accent) 0%, #6a8ffc 100%);color:#fff;}
   .mv-hero-top{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:rgba(255,255,255,.82);margin-bottom:10px;}
   .mv-hero-top .reset-btn{color:#fff;opacity:.85;font-size:11.5px;}
@@ -211,59 +106,13 @@
 <div class="app">
 
   <header>
-    <div class="header-top">
-      <div>
-        <h1>Move to house</h1>
-        <p>Jul 21 &rarr; Sep 26, 2026</p>
-      </div>
-      <div class="progress-ring-wrap">
-        <svg class="progress-ring" viewBox="0 0 64 64" width="56" height="56">
-          <defs>
-            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:var(--accent)"></stop>
-              <stop offset="100%" style="stop-color:var(--green)"></stop>
-            </linearGradient>
-          </defs>
-          <circle class="ring-track" cx="32" cy="32" r="27"></circle>
-          <circle class="ring-fill" id="progress-ring-fill" cx="32" cy="32" r="27" stroke-dasharray="169.6" stroke-dashoffset="169.6"></circle>
-        </svg>
-        <span class="progress-ring-label" id="progress-ring-label">0%</span>
-      </div>
-    </div>
-    <div class="progress-row">
-      <span class="progress-text" id="progress-text">0 of 32 done</span>
-      <button class="reset-btn" id="reset-btn">Reset all</button>
-    </div>
+    <h1>Move to house</h1>
+    <p>Jul 21 &rarr; Sep 26, 2026</p>
   </header>
 
   <div class="tabs">
-    <button class="tab-btn active" data-tab="checklist">Checklist</button>
-    <button class="tab-btn" data-tab="timeline">Timeline</button>
+    <button class="tab-btn active" data-tab="move">Checklist</button>
     <button class="tab-btn" data-tab="countdown">Countdown</button>
-    <button class="tab-btn" data-tab="houses">Houses</button>
-    <button class="tab-btn" data-tab="move">Move</button>
-  </div>
-
-  <div id="view-checklist">
-    <div class="toolbar">
-      <label><input type="checkbox" id="hide-done-toggle"> Hide done</label>
-      <span></span>
-    </div>
-    <div id="checklist-body"></div>
-  </div>
-
-  <div id="view-timeline" style="display:none;">
-    <div class="tl-wrap">
-      <div class="tl-labels" id="tl-labels"></div>
-      <div class="tl-scroll">
-        <div class="tl-inner" id="tl-inner"></div>
-      </div>
-    </div>
-    <p class="hint">Scroll to see the full date range &rarr;</p>
-    <div class="tl-legend">
-      <span><i style="background:var(--text-muted);"></i>Pending</span>
-      <span><i style="background:var(--green);"></i>Done</span>
-    </div>
   </div>
 
   <div id="view-countdown" style="display:none;">
@@ -284,60 +133,7 @@
     </div>
   </div>
 
-  <div id="view-houses" style="display:none;">
-    <div class="gsync-bar">
-      <span id="google-status" class="gstatus">Not connected</span>
-      <span>
-        <button class="mini-btn primary" id="connect-btn">Connect Google Sheet</button>
-        <button class="mini-btn" id="sync-btn" style="display:none;">Refresh</button>
-        <button class="mini-btn" id="disconnect-btn" style="display:none;">Disconnect</button>
-      </span>
-    </div>
-    <div class="gcfg-panel" id="gcfg-panel">
-      <label for="gcfg-client-id">Google OAuth client ID</label>
-      <input type="text" id="gcfg-client-id" placeholder="xxxxxxxx.apps.googleusercontent.com">
-      <label for="gcfg-sheet-id">Spreadsheet ID</label>
-      <input type="text" id="gcfg-sheet-id">
-      <div id="gcfg-origin-box" style="margin-bottom:10px;padding:8px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--border-strong);">
-        <span style="font-size:11.5px;color:var(--text-secondary);">This page's origin (register exactly this under "Authorized JavaScript origins" in Google Cloud Console):</span>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
-          <code id="gcfg-origin-value" style="flex:1;font-size:12.5px;padding:6px 8px;background:var(--surface-alt);border-radius:6px;word-break:break-all;"></code>
-          <button type="button" class="mini-btn" id="gcfg-copy-origin" style="white-space:nowrap;">Copy</button>
-        </div>
-        <div id="gcfg-origin-warning" style="display:none;margin-top:6px;font-size:11.5px;color:var(--warning);"></div>
-      </div>
-      <p class="hint" style="margin:0;">See the README for how to get a client ID. Sync only works once this app is hosted online (GitHub Pages etc.) &mdash; it can't authenticate when opened as a local file. Your checklist is not affected if you skip this.</p>
-    </div>
-    <div class="house-subtabs" id="house-subtabs">
-      <button class="house-subtab-btn active" data-house-tab="toview">To View</button>
-      <button class="house-subtab-btn" data-house-tab="nodecision">No</button>
-      <button class="house-subtab-btn" data-house-tab="yesdecision">Yes</button>
-      <button class="house-subtab-btn" data-house-tab="closed">Closed</button>
-    </div>
-    <div id="toview-extras">
-      <div class="house-filters" id="house-filters">
-        <div class="filter-group" data-filter-group="interest">
-          <span class="filter-label">Interest</span>
-          <div class="filter-chip-row" id="filter-interest"></div>
-        </div>
-        <div class="filter-group" data-filter-group="city">
-          <span class="filter-label">City</span>
-          <div class="filter-chip-row" id="filter-city"></div>
-        </div>
-        <div class="filter-group" data-filter-group="type">
-          <span class="filter-label">Type</span>
-          <div class="filter-chip-row" id="filter-type"></div>
-        </div>
-        <button type="button" class="mini-btn" id="filters-clear-btn">Clear filters</button>
-      </div>
-    </div>
-    <div id="houses-body-toview"><p class="empty-state">Connect your Google Sheet to see your houses here.</p></div>
-    <div id="houses-body-nodecision" style="display:none;"><p class="empty-state">Connect your Google Sheet to see your houses here.</p></div>
-    <div id="houses-body-yesdecision" style="display:none;"><p class="empty-state">Connect your Google Sheet to see your houses here.</p></div>
-    <div id="houses-body-closed" style="display:none;"><p class="empty-state">Connect your Google Sheet to see your houses here.</p></div>
-  </div>
-
-  <div id="view-move" style="display:none;">
+  <div id="view-move">
     <div class="mv-hero">
       <div class="mv-hero-top">
         <span id="mv-progress-text">0 of 0 done</span>
@@ -349,192 +145,11 @@
     <div id="mv-body"></div>
   </div>
 
-  <footer>Saved automatically in this browser. Nothing is sent anywhere unless you connect Google Sheets.</footer>
+  <footer>Saved automatically in this browser, on this device.</footer>
 </div>
 
 <script>
-var TASKS = [
-  {o:1,track:"Prep",window:"Now–Aug 13",task:"Reserve rental truck",method:"-",note:"Book for the Aug 22-31 move-in weekend. Covers couch, bed, dresser.",start:"2026-07-21",end:"2026-07-25"},
-  {o:2,track:"Prep",window:"Now–Aug 13",task:"Rent new storage unit near new place",method:"-",note:"Size for combined inventory plus wood. Confirm access hours.",start:"2026-07-21",end:"2026-07-28"},
-  {o:3,track:"Prep",window:"Now–Aug 13",task:"Pull empty bins from Unit A",method:"Frontier",note:"Use to pack the apartment.",start:"2026-07-26",end:"2026-08-02"},
-  {o:4,track:"Prep",window:"Now–Aug 13",task:"Packing supplies top-up",method:"Frontier",note:"Boxes, tape, wrap, blankets, straps.",start:"2026-07-26",end:"2026-08-02"},
-  {o:5,track:"Prep",window:"Now–Aug 13",task:"Pack non-essentials",method:"-",note:"Books, decor, off-season clothes, spare linens.",start:"2026-07-28",end:"2026-08-13"},
-  {o:6,track:"Prep",window:"Now–Aug 13",task:"Measure furniture and doorways",method:"-",note:"Couch, dresser, mattress against house doors.",start:"2026-07-21",end:"2026-07-23"},
-  {o:7,track:"Prep",window:"Now–Aug 13",task:"Utilities at house",method:"-",note:"Electric, water, gas effective the keys date.",start:"2026-08-01",end:"2026-08-13"},
-  {o:8,track:"Prep",window:"Now–Aug 13",task:"Internet install scheduled",method:"-",note:"Book for keys week. Work-from-home priority.",start:"2026-08-01",end:"2026-08-13"},
-  {o:9,track:"Prep",window:"Now–Aug 13",task:"Change of address and insurance",method:"-",note:"USPS, bank, business, subscriptions.",start:"2026-08-01",end:"2026-08-13"},
-  {o:10,track:"House",window:"Aug 14-21",task:"Confirm utilities and internet live",method:"-",note:"Before you move in to live.",start:"2026-08-14",end:"2026-08-21"},
-  {o:11,track:"House",window:"Aug 14-21",task:"Prep and clean house rooms",method:"-",note:"Do this before furniture lands.",start:"2026-08-14",end:"2026-08-21"},
-  {o:12,track:"House",window:"Aug 14-21",task:"Power tools and heavy garage gear",method:"Frontier",note:"Multiple trips. To house garage.",start:"2026-08-14",end:"2026-08-21"},
-  {o:13,track:"House",window:"Aug 14-21",task:"Garage shelves and pegboard",method:"Frontier",note:"Unmount, patch the wall. To house garage.",start:"2026-08-19",end:"2026-08-21"},
-  {o:14,track:"House",window:"Aug 22-31",task:"Couch",method:"Rental",note:"Get a hand.",start:"2026-08-22",end:"2026-08-23"},
-  {o:15,track:"House",window:"Aug 22-31",task:"Mattress bed frame and bedding",method:"Rental",note:"Make up the bed same day. You sleep here that night.",start:"2026-08-22",end:"2026-08-23"},
-  {o:16,track:"House",window:"Aug 22-31",task:"Dresser bookshelf TV stand coffee table",method:"Rental",note:"-",start:"2026-08-22",end:"2026-08-23"},
-  {o:17,track:"House",window:"Aug 22-31",task:"TV",method:"Rental or Frontier",note:"Blanket-wrap, screen upright.",start:"2026-08-22",end:"2026-08-24"},
-  {o:18,track:"House",window:"Aug 22-31",task:"Daily kitchen kit and fridge freezer food",method:"Frontier",note:"Coolers for the food.",start:"2026-08-24",end:"2026-08-31"},
-  {o:19,track:"House",window:"Aug 22-31",task:"Bathroom essentials towels toiletries",method:"Frontier",note:"-",start:"2026-08-24",end:"2026-08-31"},
-  {o:20,track:"House",window:"Aug 22-31",task:"Current clothes",method:"Frontier",note:"-",start:"2026-08-24",end:"2026-08-31"},
-  {o:21,track:"House",window:"Aug 22-31",task:"Indoor plants",method:"Frontier cab",note:"Cab only. Direct trips. No hot vehicle.",start:"2026-08-29",end:"2026-08-31"},
-  {o:22,track:"House",window:"Aug 22-31",task:"Waffles and all dog beds",method:"Frontier",note:"You live here now.",start:"2026-08-29",end:"2026-08-31"},
-  {o:23,track:"House",window:"Sep 1-26",task:"Patio furniture",method:"Frontier",note:"Trickle.",start:"2026-09-01",end:"2026-09-15"},
-  {o:24,track:"House",window:"Sep 1-26",task:"Books decor wall art lamps",method:"Frontier",note:"Trickle.",start:"2026-09-01",end:"2026-09-20"},
-  {o:25,track:"House",window:"Sep 1-26",task:"Secondary kitchen",method:"Frontier",note:"Extra dishes, appliances, pantry.",start:"2026-09-01",end:"2026-09-20"},
-  {o:26,track:"House",window:"Sep 1-26",task:"Off-season clothes and spare electronics",method:"Frontier",note:"Trickle.",start:"2026-09-01",end:"2026-09-20"},
-  {o:27,track:"Storage",window:"Sep 1-26",task:"Etsy inventory Unit A to new unit",method:"Frontier",note:"Bin and label by product line.",start:"2026-09-01",end:"2026-09-15"},
-  {o:28,track:"Storage",window:"Sep 1-26",task:"Tools Unit A to house garage",method:"Frontier",note:"Reunites with shelves and pegboard.",start:"2026-09-01",end:"2026-09-15"},
-  {o:29,track:"Storage",window:"Sep 1-26",task:"Wood inventory Unit B to new unit",method:"Own rental or Frontier",note:"Heavy. Stack by species and thickness.",start:"2026-09-06",end:"2026-09-20"},
-  {o:30,track:"Storage",window:"Sep 1-26",task:"Close out Units A and B",method:"-",note:"Photos, sweep, stop billing. Check notice periods.",start:"2026-09-20",end:"2026-09-24"},
-  {o:31,track:"Mom's",window:"Sep coordinate",task:"Dining table and lawn equipment",method:"Frontier or rental",note:"Pick a date with your mom.",start:"2026-09-12",end:"2026-09-13"},
-  {o:32,track:"House",window:"By Sep 26",task:"Final apartment clean patch photos keys",method:"-",note:"Keep a toolkit and cleaning supplies here through Sept.",start:"2026-09-22",end:"2026-09-26"}
-];
-
-var TRACK_COLORS = {
-  "Prep":{bg:"#EDE9FE",fg:"#6D4FD1",dot:"#8B5CF6"},
-  "House":{bg:"#E1F7EF",fg:"#0F8A5F",dot:"#22B37D"},
-  "Storage":{bg:"#FEEEE0",fg:"#C06A26",dot:"#E0975A"},
-  "Mom's":{bg:"#FDEAF2",fg:"#C2417A",dot:"#E0728A"}
-};
-
-var STORAGE_KEY = "move_planner_done_v1";
-var done = {};
-try{ done = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }catch(e){ done = {}; }
-
-function methodTag(method){
-  if(!method || method === "-") return "";
-  var hasFrontier = /frontier/i.test(method);
-  var hasRental = /rental/i.test(method);
-  var bg, fg, border = "";
-  if(hasFrontier && hasRental){ bg="var(--surface-alt)"; fg="var(--text-secondary)"; border="border:1px dashed var(--border-strong);"; }
-  else if(hasFrontier){ bg="var(--accent-bg)"; fg="var(--accent)"; }
-  else if(hasRental){ bg="var(--warning-bg)"; fg="var(--warning)"; }
-  else { bg="var(--surface-alt)"; fg="var(--text-secondary)"; }
-  return '<span class="tag" style="background:'+bg+';color:'+fg+';'+border+'">'+method+'</span>';
-}
-
-function groupByTrack(tasks){
-  var order = [], map = {};
-  tasks.forEach(function(t){
-    if(!map[t.track]){ map[t.track]=[]; order.push(t.track); }
-    map[t.track].push(t);
-  });
-  return order.map(function(track){ return {track:track, items:map[track]}; });
-}
-
-function renderChecklist(){
-  var groups = groupByTrack(TASKS);
-  var html = "";
-  groups.forEach(function(g){
-    var c = TRACK_COLORS[g.track] || {bg:"var(--surface-alt)",fg:"var(--text-secondary)",dot:"var(--text-muted)"};
-    html += '<div class="section-label"><span class="dot" style="background:'+c.dot+'"></span>'+g.track+'</div>';
-    g.items.forEach(function(t){
-      var isDone = !!done[t.o];
-      html += '<div class="task-row'+(isDone?' done':'')+'" data-order="'+t.o+'">'
-        + '<input type="checkbox" class="task-check" data-order="'+t.o+'"'+(isDone?' checked':'')+'>'
-        + '<div style="flex:1;min-width:0;">'
-        + '<p class="task-title">'+t.task+'</p>'
-        + '<div class="tag-row"><span class="tag" style="background:'+c.bg+';color:'+c.fg+';">'+g.track+'</span><span class="tag">'+t.window+'</span>'+methodTag(t.method)+'</div>'
-        + (t.note && t.note !== "-" ? '<p class="task-note">'+t.note+'</p>' : '')
-        + '</div></div>';
-    });
-  });
-  document.getElementById("checklist-body").innerHTML = html;
-}
-
-var RANGE_START = new Date(2026,6,21);
-var RANGE_END = new Date(2026,8,26);
-var PX_PER_DAY = 12;
-var MS_DAY = 86400000;
-function dayOffset(dateStr){
-  var d = new Date(dateStr+"T00:00:00");
-  return Math.round((d - RANGE_START) / MS_DAY);
-}
-var TOTAL_DAYS = dayOffset("2026-09-26");
-var TL_WIDTH = TOTAL_DAYS * PX_PER_DAY;
-
-function shortLabel(task){
-  var t = task.task;
-  return t.length > 20 ? t.slice(0,19)+"…" : t;
-}
-
-function renderTimeline(){
-  var groups = groupByTrack(TASKS);
-  var weeks = [];
-  for(var d=0; d<=TOTAL_DAYS; d+=7){ weeks.push(d); }
-  if(weeks[weeks.length-1] !== TOTAL_DAYS) weeks.push(TOTAL_DAYS);
-
-  var labelsHtml = "";
-  var barsHtml = "";
-
-  weeks.forEach(function(d){
-    barsHtml += '<div class="tl-gridline" style="left:'+(d*PX_PER_DAY)+'px;'+(d===0?'background:var(--today);':'')+'"></div>';
-  });
-
-  labelsHtml += '<div class="tl-row-axis"></div>';
-  barsHtml += '<div class="tl-row-axis" style="width:'+TL_WIDTH+'px;position:relative;">';
-  weeks.forEach(function(d){
-    var dt = new Date(RANGE_START.getTime() + d*MS_DAY);
-    var lbl = dt.toLocaleDateString("en-US",{month:"short",day:"numeric"});
-    var isToday = d===0;
-    var isLast = d===TOTAL_DAYS;
-    var transform = isToday ? "translateX(0%)" : (isLast ? "translateX(-85%)" : "translateX(-50%)");
-    barsHtml += '<span style="position:absolute;left:'+(d*PX_PER_DAY)+'px;top:0;transform:'+transform+';font-size:10.5px;color:'+(isToday?'var(--today)':'var(--text-muted)')+';font-weight:'+(isToday?'600':'400')+';">'+(isToday?"Today":lbl)+'</span>';
-  });
-  barsHtml += '</div>';
-
-  groups.forEach(function(g){
-    var c = TRACK_COLORS[g.track] || {dot:"var(--text-muted)"};
-    labelsHtml += '<div class="tl-row-section"><div class="tl-section-label"><span class="dot" style="background:'+c.dot+'"></span>'+g.track+'</div></div>';
-    barsHtml += '<div class="tl-row-section" style="width:'+TL_WIDTH+'px;"></div>';
-    g.items.forEach(function(t){
-      var left = dayOffset(t.start) * PX_PER_DAY;
-      var width = Math.max(dayOffset(t.end)*PX_PER_DAY - left, 4);
-      var isDone = !!done[t.o];
-      labelsHtml += '<div class="tl-row-task"><div class="tl-label">'+shortLabel(t)+'</div></div>';
-      barsHtml += '<div class="tl-row-task"><div class="tl-track" style="width:'+TL_WIDTH+'px;">'
-        + '<div class="tl-bar'+(isDone?' done':'')+'" data-order="'+t.o+'" style="left:'+left+'px;width:'+width+'px;"></div>'
-        + '</div></div>';
-    });
-  });
-
-  document.getElementById("tl-labels").innerHTML = labelsHtml;
-  document.getElementById("tl-inner").innerHTML = barsHtml;
-}
-
-var RING_CIRCUMFERENCE = 169.6;
-function updateProgress(){
-  var total = TASKS.length;
-  var count = Object.keys(done).filter(function(k){ return done[k]; }).length;
-  var pct = total ? (count/total*100) : 0;
-  var ringFill = document.getElementById("progress-ring-fill");
-  if(ringFill) ringFill.style.strokeDashoffset = (RING_CIRCUMFERENCE - (pct/100)*RING_CIRCUMFERENCE).toFixed(1);
-  var ringLabel = document.getElementById("progress-ring-label");
-  if(ringLabel) ringLabel.textContent = Math.round(pct)+"%";
-  document.getElementById("progress-text").textContent = count+" of "+total+" done";
-}
-
-function setChecked(order, checked, skipPush){
-  done[order] = checked;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(done));
-  var row = document.querySelector('.task-row[data-order="'+order+'"]');
-  if(row) row.classList.toggle("done", checked);
-  var checkbox = document.querySelector('.task-check[data-order="'+order+'"]');
-  if(checkbox) checkbox.checked = checked;
-  var bar = document.querySelector('.tl-bar[data-order="'+order+'"]');
-  if(bar) bar.classList.toggle("done", checked);
-  updateProgress();
-  if(!skipPush) pushDoneToSheet(order, checked);
-}
-
-document.addEventListener("change", function(e){
-  if(e.target.classList.contains("task-check")){
-    setChecked(e.target.getAttribute("data-order"), e.target.checked);
-  }
-  if(e.target.id === "hide-done-toggle"){
-    document.getElementById("checklist-body").parentElement.classList.toggle("hide-done", e.target.checked);
-  }
-});
-
-var TAB_VIEWS = ["checklist","timeline","countdown","houses","move"];
+var TAB_VIEWS = ["move","countdown"];
 document.querySelectorAll(".tab-btn").forEach(function(btn){
   btn.addEventListener("click", function(){
     document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.remove("active"); });
@@ -543,23 +158,6 @@ document.querySelectorAll(".tab-btn").forEach(function(btn){
     TAB_VIEWS.forEach(function(v){
       document.getElementById("view-"+v).style.display = (v===tab) ? "block" : "none";
     });
-  });
-});
-
-var HOUSE_TAB_KEYS = ["toview","nodecision","yesdecision","closed"];
-document.querySelectorAll(".house-subtab-btn").forEach(function(btn){
-  btn.addEventListener("click", function(){
-    document.querySelectorAll(".house-subtab-btn").forEach(function(b){ b.classList.remove("active"); });
-    btn.classList.add("active");
-    var key = btn.getAttribute("data-house-tab");
-    HOUSE_TAB_KEYS.forEach(function(k){
-      var cfg = tabByKey(k);
-      if(cfg) document.getElementById(cfg.bodyId).style.display = (k===key) ? "block" : "none";
-    });
-    var extrasEl = document.getElementById("toview-extras");
-    if(extrasEl){
-      extrasEl.style.display = (key==="toview") ? "block" : "none";
-    }
   });
 });
 
@@ -635,821 +233,29 @@ saveCountdown();
 tickCountdown();
 setInterval(tickCountdown, 1000);
 
-// ---------------------------------------------------------------- Google Sheets sync
-var CONFIG_KEY = "move_planner_google_config_v1";
-var DEFAULT_SPREADSHEET_ID = "1VBkY6ZD0ODqq5kAzB9X29JnS3t6OTl33A7widmDh9Q4";
-var DEFAULT_CLIENT_ID = "1064081143881-sh8rsd2si0tijlcnakke1nl87rh4ijla.apps.googleusercontent.com";
-var googleConfig = { clientId: DEFAULT_CLIENT_ID, spreadsheetId: DEFAULT_SPREADSHEET_ID };
-try{
-  var savedCfg = JSON.parse(localStorage.getItem(CONFIG_KEY));
-  if(savedCfg){ if(savedCfg.clientId) googleConfig.clientId = savedCfg.clientId; if(savedCfg.spreadsheetId) googleConfig.spreadsheetId = savedCfg.spreadsheetId; }
-}catch(e){}
-
-var accessToken = null;
-var tokenClient = null;
-var housesTables = {};
-var checklistRowBySheet = {};
-var movingHouseKeys = {};
-var sheetIdByName = {};
-
-// The house-tracking tabs in the Google Sheet. sheetName must match
-// the tab name exactly (case-sensitive) as it appears in Google Sheets.
-var HOUSE_TABS = [
-  { key: "toview", sheetName: "To View", bodyId: "houses-body-toview", greyAll: false },
-  { key: "nodecision", sheetName: "No Decision", bodyId: "houses-body-nodecision", greyAll: true },
-  { key: "yesdecision", sheetName: "Yes Decision", bodyId: "houses-body-yesdecision", greyAll: false },
-  { key: "closed", sheetName: "Closed", bodyId: "houses-body-closed", greyAll: false }
-];
-function tabByKey(key){
-  for(var i=0;i<HOUSE_TABS.length;i++){ if(HOUSE_TABS[i].key === key) return HOUSE_TABS[i]; }
-  return null;
-}
-function quotedRange(sheetName, a1){
-  return "'" + sheetName.replace(/'/g,"''") + "'!" + a1;
-}
-
-function saveGoogleConfig(){ localStorage.setItem(CONFIG_KEY, JSON.stringify(googleConfig)); }
-
-function gisReady(){ return typeof google !== "undefined" && google.accounts && google.accounts.oauth2; }
-
-function setConnectionStatus(connected, message){
-  var el = document.getElementById("google-status");
-  if(!el) return;
-  el.textContent = connected ? "Connected" : (message || "Not connected");
-  el.className = "gstatus" + (connected ? " connected" : (message ? " error" : ""));
-  document.getElementById("connect-btn").style.display = connected ? "none" : "inline-block";
-  document.getElementById("sync-btn").style.display = connected ? "inline-block" : "none";
-  document.getElementById("disconnect-btn").style.display = connected ? "inline-block" : "none";
-}
-
-function initTokenClientIfNeeded(){
-  if(!gisReady() || !googleConfig.clientId) return null;
-  if(tokenClient) return tokenClient;
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: googleConfig.clientId,
-    scope: "https://www.googleapis.com/auth/spreadsheets",
-    callback: function(resp){
-      if(resp && resp.access_token){
-        accessToken = resp.access_token;
-        syncFromSheet();
-      } else {
-        setConnectionStatus(false, "Connection was not granted.");
-      }
-    },
-    error_callback: function(){
-      setConnectionStatus(false, "Connection failed. Try again.");
-    }
-  });
-  return tokenClient;
-}
-
-function connectGoogle(){
-  googleConfig.clientId = document.getElementById("gcfg-client-id").value.trim();
-  googleConfig.spreadsheetId = document.getElementById("gcfg-sheet-id").value.trim() || DEFAULT_SPREADSHEET_ID;
-  saveGoogleConfig();
-  sheetIdByName = {};
-  if(!googleConfig.clientId){
-    setConnectionStatus(false, "Paste your Google OAuth client ID first.");
-    return;
-  }
-  if(!gisReady()){
-    setConnectionStatus(false, "Google sign-in didn't load. Check your connection and that this page is hosted online.");
-    return;
-  }
-  var tc = initTokenClientIfNeeded();
-  setConnectionStatus(false, "Connecting…");
-  tc.requestAccessToken({ prompt: "consent" });
-}
-
-function disconnectGoogle(){
-  if(accessToken && gisReady() && google.accounts.oauth2.revoke){
-    google.accounts.oauth2.revoke(accessToken, function(){});
-  }
-  accessToken = null;
-  setConnectionStatus(false);
-}
-
-function sheetsFetch(path, options){
-  options = options || {};
-  options.headers = Object.assign({ "Authorization": "Bearer " + accessToken }, options.headers || {});
-  return fetch("https://sheets.googleapis.com/v4/spreadsheets/" + googleConfig.spreadsheetId + path, options)
-    .then(function(res){
-      if(!res.ok){
-        return res.json().catch(function(){ return {}; }).then(function(body){
-          throw new Error((body.error && body.error.message) || ("Request failed: " + res.status));
-        });
-      }
-      return res.json();
-    });
-}
-
-function colLetter(i){
-  var s = "", n = i + 1;
-  while(n > 0){
-    var m = (n - 1) % 26;
-    s = String.fromCharCode(65 + m) + s;
-    n = Math.floor((n - m) / 26);
-  }
-  return s;
-}
-
+// ---------------------------------------------------------------- helpers
 function escapeHtml(s){
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
 
-function parseSheetTable(values){
-  if(!values || !values.length) return { headers: [], rows: [] };
-  var headers = values[0];
-  var rows = [];
-  for(var r = 1; r < values.length; r++){
-    var srcRow = values[r];
-    if(!srcRow || !srcRow.length) continue;
-    var obj = { _row: r + 1 };
-    headers.forEach(function(h, i){ obj[i] = srcRow[i] !== undefined ? srcRow[i] : ""; });
-    rows.push(obj);
-  }
-  return { headers: headers, rows: rows };
-}
-
-function findCol(headers, patterns){
-  for(var i = 0; i < headers.length; i++){
-    var h = (headers[i] || "").toString().trim();
-    for(var p = 0; p < patterns.length; p++){
-      if(patterns[p].test(h)) return i;
-    }
-  }
-  return -1;
-}
-
-function isTruthy(v){
-  return v === true || v === "TRUE" || v === "true" || v === 1 || v === "1";
-}
-
-function syncFromSheet(){
-  HOUSE_TABS.forEach(function(t){
-    var el = document.getElementById(t.bodyId);
-    if(el) el.innerHTML = '<p class="empty-state">Loading your houses…</p>';
-  });
-  var rangeQS = HOUSE_TABS.map(function(t){
-    return "ranges=" + encodeURIComponent(quotedRange(t.sheetName, "A1:AZ500"));
-  }).join("&");
-  rangeQS += "&ranges=" + encodeURIComponent("Checklist!A1:Z200");
-  return sheetsFetch("/values:batchGet?" + rangeQS + "&valueRenderOption=FORMATTED_VALUE")
-    .then(function(data){
-      movingHouseKeys = {};
-      HOUSE_TABS.forEach(function(t, idx){
-        var table = parseSheetTable(data.valueRanges[idx].values);
-        housesTables[t.key] = table;
-        renderHouseList(table, t);
-      });
-      var checklist = parseSheetTable(data.valueRanges[HOUSE_TABS.length].values);
-      mergeChecklistFromSheet(checklist);
-      setConnectionStatus(true);
-    })
-    .catch(function(err){
-      setConnectionStatus(false, "Sync failed: " + err.message);
-    });
-}
-
-function computeHouseColumns(headers){
-  var iToured = findCol(headers,[/toured/i]);
-  var iInterest = findCol(headers,[/interest/i]);
-  var iPrice = findCol(headers,[/^price$/i]);
-  var iAddress = findCol(headers,[/address/i]);
-  var iCity = findCol(headers,[/^city$/i]);
-  var iType = findCol(headers,[/property type/i]);
-  var iBeds = findCol(headers,[/beds?/i]);
-  var iBaths = findCol(headers,[/baths?/i]);
-  var iSqft = findCol(headers,[/square footage|sqft|sq\s*ft/i]);
-  var iLiveNotes = findCol(headers,[/live\s*notes/i]);
-  var iNotes = -1;
-  for(var ni=0; ni<headers.length; ni++){
-    var nh = (headers[ni]||"").toString().trim();
-    if(/notes/i.test(nh) && !/live\s*notes/i.test(nh)){ iNotes = ni; break; }
-  }
-  var iMls = findCol(headers,[/mls/i]);
-  var iZillow = findCol(headers,[/zillow/i]);
-  var iApplied = findCol(headers,[/applied/i]);
-  var iAccepted = findCol(headers,[/accepted/i]);
-  var iReason = findCol(headers,[/reason/i]);
-  var known = [iToured,iInterest,iPrice,iAddress,iCity,iType,iBeds,iBaths,iSqft,iNotes,iLiveNotes,iMls,iZillow,iApplied,iAccepted,iReason].filter(function(i){ return i>=0; });
-  return {
-    iToured:iToured, iInterest:iInterest, iPrice:iPrice, iAddress:iAddress, iCity:iCity,
-    iType:iType, iBeds:iBeds, iBaths:iBaths, iSqft:iSqft, iNotes:iNotes, iLiveNotes:iLiveNotes,
-    iMls:iMls, iZillow:iZillow, iApplied:iApplied, iAccepted:iAccepted, iReason:iReason, known:known
-  };
-}
-
-var CITY_PALETTE = [
-  { bg:"#dbeafe", text:"#1d4ed8" }, { bg:"#dcfce7", text:"#15803d" },
-  { bg:"#fce7f3", text:"#be185d" }, { bg:"#ffedd5", text:"#c2410c" },
-  { bg:"#e0e7ff", text:"#4338ca" }, { bg:"#ccfbf1", text:"#0f766e" },
-  { bg:"#fae8ff", text:"#a21caf" }, { bg:"#fef9c3", text:"#854d0e" },
-  { bg:"#e2e8f0", text:"#334155" }, { bg:"#fee2e2", text:"#b91c1c" }
-];
-function hashStr(s){
-  var h = 0;
-  s = String(s||"");
-  for(var i=0;i<s.length;i++){ h = ((h<<5)-h)+s.charCodeAt(i); h |= 0; }
-  return Math.abs(h);
-}
-function cityColor(city){
-  city = String(city||"").trim();
-  if(!city) return null;
-  return CITY_PALETTE[hashStr(city.toLowerCase()) % CITY_PALETTE.length];
-}
-
-function classifyInterest(interest){
-  if(/^like/i.test(interest)) return "interest-like";
-  if(/love|yes|interested/i.test(interest)) return "interest-good";
-  if(/maybe/i.test(interest)) return "interest-mid";
-  if(/pass|no/i.test(interest)) return "interest-bad";
-  return "";
-}
-
-var REASON_OPTIONS = ["Applied & lost", "Rented before I could apply"];
-
-function buildHouseCardsHtml(rows, headers, tabConfig, cols){
-  var iToured=cols.iToured, iInterest=cols.iInterest, iPrice=cols.iPrice, iAddress=cols.iAddress,
-      iCity=cols.iCity, iType=cols.iType, iBeds=cols.iBeds, iBaths=cols.iBaths, iSqft=cols.iSqft,
-      iNotes=cols.iNotes, iLiveNotes=cols.iLiveNotes, iMls=cols.iMls, iZillow=cols.iZillow,
-      iApplied=cols.iApplied, iAccepted=cols.iAccepted, iReason=cols.iReason, known=cols.known;
-
-  var html = "";
-  rows.forEach(function(row){
-    var addressRaw = iAddress>=0 ? (row[iAddress]||"") : "";
-    var cityRaw = iCity>=0 ? (row[iCity]||"") : "";
-    var address = addressRaw || cityRaw || ("Row "+row._row);
-    var toured = iToured>=0 ? isTruthy(row[iToured]) : false;
-    var interest = iInterest>=0 ? (row[iInterest]||"") : "";
-    var interestClass = classifyInterest(interest);
-    var isPassed = !!tabConfig.greyAll;
-    var isClosed = tabConfig.key === "closed";
-    var cardId = "house-card-"+tabConfig.key+"-"+row._row;
-    var moving = isHouseMoving(tabConfig.key, row._row);
-
-    html += '<div class="house-card'+(isPassed ? ' house-passed' : '')+(isClosed ? ' house-closed' : '')+(moving ? ' house-card-moving' : '')+'" id="'+cardId+'" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'">';
-    html += '<div class="house-head"><p class="house-address">'+escapeHtml(address)+'</p>'
-      + '<label class="house-toured"><input type="checkbox" class="toured-check" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'"'+(toured?' checked':'')+'>Toured</label></div>';
-
-    html += '<div class="house-tags">';
-    if(interest) html += '<span class="tag '+interestClass+'">'+escapeHtml(interest)+'</span>';
-    if(cityRaw){
-      var cc = cityColor(cityRaw);
-      var style = cc ? ' style="background:'+cc.bg+';color:'+cc.text+';"' : '';
-      html += '<span class="tag"'+style+'>'+escapeHtml(cityRaw)+'</span>';
-    }
-    if(iType>=0 && row[iType]) html += '<span class="tag">'+escapeHtml(row[iType])+'</span>';
-    html += '</div>';
-
-    if((tabConfig.key === "yesdecision" || tabConfig.key === "closed") && (iApplied>=0 || iAccepted>=0)){
-      html += '<div class="house-featured">';
-      if(iApplied>=0){
-        html += '<label class="house-featured-item house-featured-check"><span class="house-featured-label">Applied</span>'
-          + '<input type="checkbox" class="applied-check" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'"'+(isTruthy(row[iApplied])?' checked':'')+'></label>';
-      }
-      if(iAccepted>=0){
-        html += '<label class="house-featured-item house-featured-check"><span class="house-featured-label">Accepted</span>'
-          + '<input type="checkbox" class="accepted-check" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'"'+(isTruthy(row[iAccepted])?' checked':'')+'></label>';
-      }
-      html += '</div>';
-    }
-
-    if(isClosed && iReason>=0){
-      var reasonVal = (row[iReason]||"").toString().trim();
-      html += '<div class="house-reason"><span class="house-notes-label">Reason</span><div class="filter-chip-row">';
-      html += REASON_OPTIONS.map(function(opt){
-        return '<button type="button" class="filter-chip reason-chip'+(reasonVal===opt?' active':'')+'" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'" data-reason-value="'+escapeHtml(opt)+'">'+escapeHtml(opt)+'</button>';
-      }).join('');
-      html += '</div></div>';
-    }
-
-    html += '<div class="house-stats">';
-    if(iPrice>=0 && row[iPrice]) html += '<div class="hstat"><span class="hstat-num">'+escapeHtml(row[iPrice])+'</span><span class="hstat-label">rent</span></div>';
-    if(iBeds>=0 && row[iBeds]!=="") html += '<div class="hstat"><span class="hstat-num">'+escapeHtml(row[iBeds])+'</span><span class="hstat-label">beds</span></div>';
-    if(iBaths>=0 && row[iBaths]!=="") html += '<div class="hstat"><span class="hstat-num">'+escapeHtml(row[iBaths])+'</span><span class="hstat-label">baths</span></div>';
-    if(iSqft>=0 && row[iSqft]) html += '<div class="hstat"><span class="hstat-num">'+escapeHtml(row[iSqft])+'</span><span class="hstat-label">size</span></div>';
-    html += '</div>';
-
-    if(iNotes>=0 && row[iNotes]){
-      html += '<span class="house-notes-label">Pre-tour notes</span>';
-      html += '<p class="house-notes">'+escapeHtml(row[iNotes])+'</p>';
-    }
-
-    if(iLiveNotes>=0){
-      var liveVal = row[iLiveNotes] || "";
-      html += '<span class="house-notes-label">Live notes</span>';
-      html += '<div class="house-live-notes">'
-        + '<textarea class="live-notes-input" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'" rows="3" placeholder="Tap to jot notes on site&hellip;">'+escapeHtml(liveVal)+'</textarea>'
-        + '<span class="live-notes-status" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'"></span>'
-        + '</div>';
-    }
-
-    var extra = headers.map(function(h,i){ return {h:h,i:i}; }).filter(function(o){
-      return known.indexOf(o.i)===-1 && o.h && o.h.toString().trim() && !/^helper$/i.test(o.h) && row[o.i];
-    });
-    if(extra.length){
-      html += '<div class="house-extra">'+extra.map(function(o){ return '<span>'+escapeHtml(o.h)+': '+escapeHtml(row[o.i])+'</span>'; }).join('')+'</div>';
-    }
-
-    var links = "";
-    if(iMls>=0 && row[iMls]) links += '<a class="house-link" href="'+row[iMls]+'" target="_blank" rel="noopener">MLS listing</a>';
-    if(iZillow>=0 && row[iZillow]) links += '<a class="house-link" href="'+row[iZillow]+'" target="_blank" rel="noopener">Zillow</a>';
-    if(links) html += '<div class="house-links">'+links+'</div>';
-
-    if(moving){
-      html += '<div class="house-move-actions"><span class="move-status">Moving&hellip;</span></div>';
-    } else if(tabConfig.key === "toview"){
-      html += '<div class="house-move-actions">'
-        + '<button type="button" class="move-btn move-no" data-row="'+row._row+'" data-house-tab="toview" data-move-to="nodecision">No</button>'
-        + '<button type="button" class="move-btn move-yes" data-row="'+row._row+'" data-house-tab="toview" data-move-to="yesdecision">Yes</button>'
-        + '</div>';
-    } else if(tabConfig.key === "yesdecision"){
-      html += '<div class="house-move-actions">'
-        + '<button type="button" class="move-btn move-back" data-row="'+row._row+'" data-house-tab="yesdecision" data-move-to="toview">Return to View</button>'
-        + '<button type="button" class="move-btn move-closed" data-row="'+row._row+'" data-house-tab="yesdecision" data-move-to="closed">Closed</button>'
-        + '</div>';
-    } else if(tabConfig.key === "closed"){
-      html += '<div class="house-move-actions">'
-        + '<button type="button" class="move-btn move-yes" data-row="'+row._row+'" data-house-tab="closed" data-move-to="yesdecision">Return to Yes</button>'
-        + '</div>';
-    } else {
-      html += '<div class="house-move-actions">'
-        + '<button type="button" class="move-btn move-back" data-row="'+row._row+'" data-house-tab="'+tabConfig.key+'" data-move-to="toview">&#8617; Move back to To View</button>'
-        + '</div>';
-    }
-
-    html += '</div>';
-  });
-  return html;
-}
-
-function renderHouseList(table, tabConfig){
-  housesTables[tabConfig.key] = table;
-  var headers = table.headers;
-  var cols = computeHouseColumns(headers);
-
-  var containerEl = document.getElementById(tabConfig.bodyId);
-  if(!containerEl) return;
-
-  if(!table.rows.length){
-    containerEl.innerHTML = '<p class="empty-state">No houses in this tab yet.</p>';
-  } else if(tabConfig.key === "toview"){
-    refreshToViewFilterBar(table.rows, headers, cols);
-    applyToViewFilters();
-  } else {
-    containerEl.innerHTML = buildHouseCardsHtml(table.rows, headers, tabConfig, cols);
-  }
-}
-
-// ---- To View filter bar ----
-var toViewFilters = { interest: null, city: null, type: null };
-var toViewFilterOptions = { interest: [], city: [], type: [] };
-var toViewCols = null;
-
-function collectDistinctValues(rows, index){
-  var seen = {};
-  var out = [];
-  if(index < 0) return out;
-  rows.forEach(function(row){
-    var v = (row[index]||"").toString().trim();
-    if(!v || seen[v]) return;
-    seen[v] = true;
-    out.push(v);
-  });
-  out.sort(function(a,b){ return a.localeCompare(b); });
-  return out;
-}
-
-function renderFilterChips(groupKey, values){
-  var el = document.getElementById("filter-"+groupKey);
-  if(!el) return;
-  if(!values.length){ el.innerHTML = '<span class="filter-chip" style="opacity:.5;cursor:default;">None yet</span>'; return; }
-  var active = toViewFilters[groupKey];
-  el.innerHTML = values.map(function(v){
-    var isActive = active === v;
-    return '<button type="button" class="filter-chip'+(isActive?' active':'')+'" data-filter-group="'+groupKey+'" data-filter-value="'+escapeHtml(v)+'">'+escapeHtml(v)+'</button>';
-  }).join('');
-}
-
-function refreshToViewFilterBar(rows, headers, cols){
-  toViewCols = cols;
-  toViewFilterOptions.interest = collectDistinctValues(rows, cols.iInterest);
-  toViewFilterOptions.city = collectDistinctValues(rows, cols.iCity);
-  toViewFilterOptions.type = collectDistinctValues(rows, cols.iType);
-  renderFilterChips("interest", toViewFilterOptions.interest);
-  renderFilterChips("city", toViewFilterOptions.city);
-  renderFilterChips("type", toViewFilterOptions.type);
-}
-
-function getFilteredToViewRows(){
-  var table = housesTables.toview;
-  if(!table) return [];
-  var cols = toViewCols || computeHouseColumns(table.headers);
-  return table.rows.filter(function(row){
-    if(toViewFilters.interest && cols.iInterest>=0 && (row[cols.iInterest]||"").toString().trim() !== toViewFilters.interest) return false;
-    if(toViewFilters.city && cols.iCity>=0 && (row[cols.iCity]||"").toString().trim() !== toViewFilters.city) return false;
-    if(toViewFilters.type && cols.iType>=0 && (row[cols.iType]||"").toString().trim() !== toViewFilters.type) return false;
-    return true;
-  });
-}
-
-function applyToViewFilters(){
-  var table = housesTables.toview;
-  var containerEl = document.getElementById("houses-body-toview");
-  if(!table || !containerEl) return;
-  var cols = toViewCols || computeHouseColumns(table.headers);
-  var tabConfig = tabByKey("toview");
-  var filtered = getFilteredToViewRows();
-  if(!filtered.length){
-    containerEl.innerHTML = '<p class="empty-state">No houses match those filters.</p>';
-  } else {
-    containerEl.innerHTML = buildHouseCardsHtml(filtered, table.headers, tabConfig, cols);
-  }
-  document.querySelectorAll('.filter-chip[data-filter-group]').forEach(function(chip){
-    var g = chip.getAttribute("data-filter-group");
-    var v = chip.getAttribute("data-filter-value");
-    chip.classList.toggle("active", toViewFilters[g] === v);
-  });
-}
-
-document.addEventListener("click", function(e){
-  var chip = e.target.closest && e.target.closest(".filter-chip[data-filter-group]");
-  if(chip){
-    var g = chip.getAttribute("data-filter-group");
-    var v = chip.getAttribute("data-filter-value");
-    toViewFilters[g] = (toViewFilters[g] === v) ? null : v;
-    applyToViewFilters();
-    return;
-  }
-  if(e.target.id === "filters-clear-btn" || (e.target.closest && e.target.closest("#filters-clear-btn"))){
-    toViewFilters = { interest: null, city: null, type: null };
-    applyToViewFilters();
-    return;
-  }
-  var moveBtn = e.target.closest && e.target.closest(".move-btn");
-  if(moveBtn){
-    var fromKey = moveBtn.getAttribute("data-house-tab");
-    var toKey = moveBtn.getAttribute("data-move-to");
-    var moveRow = moveBtn.getAttribute("data-row");
-    moveHouseToTab(fromKey, toKey, moveRow);
-    return;
-  }
-  var reasonChip = e.target.closest && e.target.closest(".reason-chip");
-  if(reasonChip){
-    var rRow = reasonChip.getAttribute("data-row");
-    var rTab = reasonChip.getAttribute("data-house-tab");
-    var rValue = reasonChip.getAttribute("data-reason-value");
-    var alreadyActive = reasonChip.classList.contains("active");
-    var newValue = alreadyActive ? "" : rValue;
-    reasonChip.closest(".house-reason").querySelectorAll(".reason-chip").forEach(function(c){
-      c.classList.toggle("active", !alreadyActive && c === reasonChip);
-    });
-    pushReasonToSheet(rRow, newValue, rTab);
-  }
-});
-
-function mergeChecklistFromSheet(table){
-  var headers = table.headers;
-  var iDone = findCol(headers,[/^done$/i]);
-  var iOrder = findCol(headers,[/^order$/i]);
-  if(iDone<0 || iOrder<0) return;
-  table.rows.forEach(function(row){
-    var order = parseInt(row[iOrder],10);
-    if(!order) return;
-    checklistRowBySheet[order] = row._row;
-    setChecked(order, isTruthy(row[iDone]), true);
-  });
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(done));
-}
-
-function pushDoneToSheet(order, checked){
-  if(!accessToken) return;
-  var row = checklistRowBySheet[order] || (parseInt(order,10) + 1);
-  sheetsFetch("/values/Checklist!A"+row+"?valueInputOption=USER_ENTERED", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ values: [[ checked ]] })
-  }).catch(function(err){ console.warn("Failed to write checklist to sheet:", err.message); });
-}
-
-function pushHouseCellToSheet(tabKey, row, colIndex, value){
-  if(!accessToken) return;
-  var tabCfg = tabByKey(tabKey);
-  if(!tabCfg || colIndex<0) return;
-  sheetsFetch("/values/"+encodeURIComponent(quotedRange(tabCfg.sheetName, colLetter(colIndex)+row))+"?valueInputOption=USER_ENTERED", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ values: [[ value ]] })
-  }).catch(function(err){ console.warn("Failed to write houses to sheet:", err.message); });
-}
-
-function pushTouredToSheet(row, checked, tabKey){
-  var table = housesTables[tabKey];
-  if(!table) return;
-  var iToured = findCol(table.headers,[/toured/i]);
-  pushHouseCellToSheet(tabKey, row, iToured, checked);
-}
-
-function pushAppliedToSheet(row, checked, tabKey){
-  var table = housesTables[tabKey];
-  if(!table) return;
-  var iApplied = findCol(table.headers,[/applied/i]);
-  pushHouseCellToSheet(tabKey, row, iApplied, checked);
-}
-
-function pushAcceptedToSheet(row, checked, tabKey){
-  var table = housesTables[tabKey];
-  if(!table) return;
-  var iAccepted = findCol(table.headers,[/accepted/i]);
-  pushHouseCellToSheet(tabKey, row, iAccepted, checked);
-}
-
-function pushReasonToSheet(row, value, tabKey){
-  var table = housesTables[tabKey];
-  if(!table) return;
-  var iReason = findCol(table.headers,[/reason/i]);
-  pushHouseCellToSheet(tabKey, row, iReason, value);
-}
-
-// ---- Moving a house between house tabs (To View / No / Yes / Closed) ----
-function ensureSheetIds(){
-  if(Object.keys(sheetIdByName).length) return Promise.resolve(sheetIdByName);
-  return sheetsFetch("?fields=sheets.properties(sheetId,title)").then(function(data){
-    (data.sheets||[]).forEach(function(s){
-      sheetIdByName[s.properties.title] = s.properties.sheetId;
-    });
-    return sheetIdByName;
-  });
-}
-
-function extractRowFields(row, headers, cols){
-  var byHeader = {};
-  headers.forEach(function(h, i){
-    var key = (h||"").toString().trim().toLowerCase();
-    if(key) byHeader[key] = row[i] !== undefined ? row[i] : "";
-  });
-  return {
-    byHeader: byHeader,
-    address: cols.iAddress>=0 ? (row[cols.iAddress]||"") : "",
-    city: cols.iCity>=0 ? (row[cols.iCity]||"") : "",
-    price: cols.iPrice>=0 ? (row[cols.iPrice]||"") : "",
-    type: cols.iType>=0 ? (row[cols.iType]||"") : "",
-    beds: cols.iBeds>=0 ? (row[cols.iBeds]||"") : "",
-    baths: cols.iBaths>=0 ? (row[cols.iBaths]||"") : "",
-    sqft: cols.iSqft>=0 ? (row[cols.iSqft]||"") : "",
-    notes: cols.iNotes>=0 ? (row[cols.iNotes]||"") : "",
-    liveNotes: cols.iLiveNotes>=0 ? (row[cols.iLiveNotes]||"") : "",
-    mls: cols.iMls>=0 ? (row[cols.iMls]||"") : "",
-    zillow: cols.iZillow>=0 ? (row[cols.iZillow]||"") : "",
-    interest: cols.iInterest>=0 ? (row[cols.iInterest]||"") : "",
-    toured: cols.iToured>=0 ? (row[cols.iToured]||"") : "",
-    applied: cols.iApplied>=0 ? (row[cols.iApplied]||"") : "",
-    accepted: cols.iAccepted>=0 ? (row[cols.iAccepted]||"") : "",
-    reason: cols.iReason>=0 ? (row[cols.iReason]||"") : ""
-  };
-}
-
-var FEATURED_FIELD_BY_COL = {
-  iAddress:"address", iCity:"city", iPrice:"price", iType:"type", iBeds:"beds",
-  iBaths:"baths", iSqft:"sqft", iNotes:"notes", iLiveNotes:"liveNotes", iMls:"mls",
-  iZillow:"zillow", iInterest:"interest", iToured:"toured", iApplied:"applied", iAccepted:"accepted",
-  iReason:"reason"
-};
-
-function buildDestRowValues(fields, destHeaders, destCols){
-  return destHeaders.map(function(h, i){
-    var key = (h||"").toString().trim().toLowerCase();
-    if(key && fields.byHeader.hasOwnProperty(key)) return fields.byHeader[key];
-    for(var colKey in FEATURED_FIELD_BY_COL){
-      if(destCols[colKey] === i) return fields[FEATURED_FIELD_BY_COL[colKey]];
-    }
-    return "";
-  });
-}
-
-function isHouseMoving(tabKey, row){
-  return !!movingHouseKeys[tabKey+":"+row];
-}
-
-function rerenderHouseTab(tabKey){
-  var cfg = tabByKey(tabKey);
-  var table = housesTables[tabKey];
-  if(cfg && table) renderHouseList(table, cfg);
-}
-
-function moveHouseToTab(fromKey, toKey, row){
-  if(!accessToken){
-    alert("Connect your Google Sheet first to move houses between tabs.");
-    return;
-  }
-  var fromCfg = tabByKey(fromKey), toCfg = tabByKey(toKey);
-  var fromTable = housesTables[fromKey];
-  if(!fromCfg || !toCfg || !fromTable) return;
-  var srcRowObj = null;
-  for(var i=0;i<fromTable.rows.length;i++){
-    if(fromTable.rows[i]._row === Number(row)){ srcRowObj = fromTable.rows[i]; break; }
-  }
-  if(!srcRowObj) return;
-
-  movingHouseKeys[fromKey+":"+row] = true;
-  rerenderHouseTab(fromKey);
-
-  var fromCols = computeHouseColumns(fromTable.headers);
-  var fields = extractRowFields(srcRowObj, fromTable.headers, fromCols);
-
-  ensureSheetIds().then(function(){
-    var destTable = housesTables[toKey];
-    var destHeadersPromise = (destTable && destTable.headers && destTable.headers.length)
-      ? Promise.resolve(destTable.headers)
-      : sheetsFetch("/values/"+encodeURIComponent(quotedRange(toCfg.sheetName, "1:1"))).then(function(data){
-          return (data.values && data.values[0]) || [];
-        });
-    return destHeadersPromise;
-  }).then(function(destHeaders){
-    var destCols = computeHouseColumns(destHeaders);
-    var destRowValues = buildDestRowValues(fields, destHeaders, destCols);
-    return sheetsFetch("/values/"+encodeURIComponent(quotedRange(toCfg.sheetName, "A1:AZ"))+":append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ values: [destRowValues] })
-    });
-  }).then(function(){
-    var srcSheetId = sheetIdByName[fromCfg.sheetName];
-    if(srcSheetId === undefined) throw new Error("Couldn't find the '"+fromCfg.sheetName+"' tab in your sheet.");
-    return sheetsFetch(":batchUpdate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        requests: [{
-          deleteDimension: {
-            range: { sheetId: srcSheetId, dimension: "ROWS", startIndex: Number(row)-1, endIndex: Number(row) }
-          }
-        }]
-      })
-    });
-  }).then(function(){
-    return syncFromSheet();
-  }).catch(function(err){
-    delete movingHouseKeys[fromKey+":"+row];
-    rerenderHouseTab(fromKey);
-    alert("Couldn't move that house: " + err.message);
-  });
-}
-
-var liveNotesTimers = {};
-function setLiveNotesStatus(row, state, tabKey){
-  var el = document.querySelector('.live-notes-status[data-row="'+row+'"][data-house-tab="'+tabKey+'"]');
-  if(!el) return;
-  el.classList.remove("saving","saved");
-  if(state === "saving"){ el.textContent = "Saving…"; el.classList.add("saving"); }
-  else if(state === "saved"){ el.textContent = "Saved"; el.classList.add("saved"); setTimeout(function(){ if(el.textContent==="Saved") el.textContent = ""; }, 2000); }
-  else if(state === "error"){ el.textContent = "Couldn't save — will retry"; }
-  else { el.textContent = ""; }
-}
-
-function pushLiveNotesToSheet(row, text, tabKey){
-  if(!accessToken) return;
-  var table = housesTables[tabKey];
-  var tabCfg = tabByKey(tabKey);
-  if(!table || !tabCfg) return;
-  var iLiveNotes = findCol(table.headers,[/live\s*notes/i]);
-  if(iLiveNotes<0) return;
-  setLiveNotesStatus(row, "saving", tabKey);
-  sheetsFetch("/values/"+encodeURIComponent(quotedRange(tabCfg.sheetName, colLetter(iLiveNotes)+row))+"?valueInputOption=USER_ENTERED", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ values: [[ text ]] })
-  }).then(function(){ setLiveNotesStatus(row, "saved", tabKey); })
-    .catch(function(err){ console.warn("Failed to write live notes to sheet:", err.message); setLiveNotesStatus(row, "error", tabKey); });
-}
-
-function scheduleLiveNotesSave(textarea){
-  var row = textarea.getAttribute("data-row");
-  var tabKey = textarea.getAttribute("data-house-tab");
-  var key = tabKey + ":" + row;
-  clearTimeout(liveNotesTimers[key]);
-  liveNotesTimers[key] = setTimeout(function(){
-    pushLiveNotesToSheet(row, textarea.value, tabKey);
-  }, 800);
-}
-
-function flushLiveNotesSave(textarea){
-  var row = textarea.getAttribute("data-row");
-  var tabKey = textarea.getAttribute("data-house-tab");
-  var key = tabKey + ":" + row;
-  clearTimeout(liveNotesTimers[key]);
-  pushLiveNotesToSheet(row, textarea.value, tabKey);
-}
-
-var BULLET = "• ";
-
-document.addEventListener("focus", function(e){
-  if(e.target && e.target.classList && e.target.classList.contains("live-notes-input")){
-    if(!e.target.value){
-      e.target.value = BULLET;
-      var len = e.target.value.length;
-      e.target.setSelectionRange(len, len);
-    }
-  }
-}, true);
-
-document.addEventListener("keydown", function(e){
-  if(e.target && e.target.classList && e.target.classList.contains("live-notes-input") && e.key === "Enter" && !e.shiftKey){
-    e.preventDefault();
-    var ta = e.target;
-    var start = ta.selectionStart, end = ta.selectionEnd;
-    var insert = "\n" + BULLET;
-    ta.value = ta.value.slice(0, start) + insert + ta.value.slice(end);
-    var newPos = start + insert.length;
-    ta.setSelectionRange(newPos, newPos);
-    scheduleLiveNotesSave(ta);
-  }
-});
-
-document.addEventListener("input", function(e){
-  if(e.target && e.target.classList && e.target.classList.contains("live-notes-input")){
-    scheduleLiveNotesSave(e.target);
-  }
-});
-
-document.addEventListener("blur", function(e){
-  if(e.target && e.target.classList && e.target.classList.contains("live-notes-input")){
-    flushLiveNotesSave(e.target);
-  }
-}, true);
-
-document.getElementById("gcfg-sheet-id").value = googleConfig.spreadsheetId;
-document.getElementById("gcfg-client-id").value = googleConfig.clientId;
-
-(function initOriginHint(){
-  var origin = window.location.origin;
-  var isFile = window.location.protocol === "file:";
-  var valueEl = document.getElementById("gcfg-origin-value");
-  var warnEl = document.getElementById("gcfg-origin-warning");
-  if(valueEl) valueEl.textContent = isFile ? "(none \u2014 you're opening this as a local file)" : origin;
-  if(warnEl){
-    if(isFile){
-      warnEl.textContent = "Google sign-in can't work from a local file. Host this on GitHub Pages (or similar) first, then open it from that https:// URL.";
-      warnEl.style.display = "block";
-    } else if(window.location.protocol !== "https:"){
-      warnEl.textContent = "This page is served over http, not https. Google's OAuth client usually requires https \u2014 use your https GitHub Pages URL instead.";
-      warnEl.style.display = "block";
-    } else {
-      warnEl.style.display = "none";
-    }
-  }
-  var copyBtn = document.getElementById("gcfg-copy-origin");
-  if(copyBtn){
-    copyBtn.addEventListener("click", function(){
-      if(isFile) return;
-      var text = origin;
-      var done = function(){
-        var old = copyBtn.textContent;
-        copyBtn.textContent = "Copied!";
-        setTimeout(function(){ copyBtn.textContent = old; }, 1500);
-      };
-      if(navigator.clipboard && navigator.clipboard.writeText){
-        navigator.clipboard.writeText(text).then(done).catch(function(){
-          window.prompt("Copy this origin:", text);
-        });
-      } else {
-        window.prompt("Copy this origin:", text);
-      }
-    });
-  }
-})();
-
-document.getElementById("connect-btn").addEventListener("click", connectGoogle);
-document.getElementById("sync-btn").addEventListener("click", syncFromSheet);
-document.getElementById("disconnect-btn").addEventListener("click", disconnectGoogle);
-document.addEventListener("change", function(e){
-  if(e.target.classList.contains("toured-check")){
-    pushTouredToSheet(e.target.getAttribute("data-row"), e.target.checked, e.target.getAttribute("data-house-tab"));
-  }
-  if(e.target.classList.contains("applied-check")){
-    pushAppliedToSheet(e.target.getAttribute("data-row"), e.target.checked, e.target.getAttribute("data-house-tab"));
-  }
-  if(e.target.classList.contains("accepted-check")){
-    pushAcceptedToSheet(e.target.getAttribute("data-row"), e.target.checked, e.target.getAttribute("data-house-tab"));
-  }
-});
-
-document.getElementById("reset-btn").addEventListener("click", function(){
-  if(!confirm("Uncheck everything?")) return;
-  done = {};
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(done));
-  renderChecklist();
-  renderTimeline();
-  updateProgress();
-});
-
-renderChecklist();
-renderTimeline();
-updateProgress();
-
 // ---------------------------------------------------------------- Move tab
 var MOVE_DATA = [
+  { pin:true, title:"Before You Move", note:"Booking + prep, start 2-3 weeks out", items:[
+    ["Reserve rental truck", "book for the move-in weekend — covers couch, bed, dresser"],
+    ["Rent new storage unit near the new place", "size for combined inventory plus wood, confirm access hours"],
+    "Pull empty bins from the old storage unit to pack the apartment",
+    ["Packing supplies top-up", "boxes, tape, wrap, blankets, straps"],
+    ["Pack non-essentials", "books, decor, off-season clothes, spare linens"],
+    "Measure furniture and doorways — couch, dresser, mattress against house doors"
+  ]},
+  { pin:true, title:"New Home Utilities", note:"Start about 2 weeks before you take possession", items:[
+    ["Electric — Bluebonnet Electric Cooperative", "800-842-7708, it's a co-op, no other provider can serve this address"],
+    ["Water / wastewater — Crossroads Utility Services", "512-246-1400"],
+    ["Gas — Atmos Energy, only if the house has gas", "888-286-6700, confirm first"],
+    ["Trash — Frontier Waste", "confirm it's already on the Crossroads account, don't sign up separately"],
+    ["Internet — AT&T or Spectrum", "schedule the install early, slots fill up"],
+    "Confirm utilities and internet are actually live before you move in to live"
+  ]},
   { pin:true, title:"Phase 0 — before anything goes in", note:"Weekend block, empty house", items:[
     "Disinfect the whole new house (empty, before move-in)",
     "Disinfect the new garage before shop setup",
@@ -1461,6 +267,7 @@ var MOVE_DATA = [
     "Grab garbage bags for hanging clothes (skip bins for those)"
   ]},
   { pin:true, title:"Garage / Shop — early project", note:"Shelves and pegboard first, then heavier tools", items:[
+    ["Unmount old garage shelves + pegboard, patch the wall", "do this before they leave — they reunite with the setup below"],
     "Laser accessory shelves (×3) + 3 garage shelves (paint / epoxy / dog accessories)",
     "Pegboard + hand tools (screwdrivers, sander, hammers)",
     "Clamps (all sizes) + toolbox",
@@ -1488,9 +295,11 @@ var MOVE_DATA = [
     "Scrap wood",
     ["Small TV on the bike's mobile stand", "not needed"],
     ["Waffles' toy bin + bedroom dog bed", "not a daily essential"],
+    ["Off-season clothes and spare electronics", "trickle over, not urgent"],
     "Load into suitcases (4), duffels (4), shop bags, milk cartons"
   ]},
   { title:"Wave 2 — early-mid (occasional)", items:[
+    ["Patio furniture", "trickle over"],
     "Entertainment center, soundbar, Xbox, desk sound system",
     "Standalone tower PC, walking pad treadmill",
     "Bedroom rug, bags+shoes bin, cables bin",
@@ -1504,6 +313,9 @@ var MOVE_DATA = [
   ]},
   { title:"Storage nodes", note:"One relay, one round-trip", items:[
     "Move Austin storage contents to new unit — wood + Etsy inventory STAY in storage",
+    ["Etsy inventory bins", "label by product line"],
+    ["Wood inventory", "heavy, stack by species and thickness"],
+    ["Close out the old storage units", "photos, sweep, stop billing — check notice periods"],
     "San Antonio run: rent small truck, coordinate with Mom, load in SA",
     "SA load: Etsy marketplace bins, lawnmower + lawn equipment, dining table",
     "Pack SA load in cardboard (leave / break down there — one-way)",
@@ -1517,7 +329,8 @@ var MOVE_DATA = [
     "Living room lamp + small side table, both bedroom side tables + lamps",
     "Plant stand",
     "Bike on trainer + bike helmet",
-    "Bulk kitchen: pots/pans (keep 1 each), Tupperware, mixing bowls, strainers, measuring cups, shakers, cutting trays, water containers, chopsticks/foil, bag clips, extra utensils, utensil holder, spoon rest"
+    "Bulk kitchen: pots/pans (keep 1 each), Tupperware, mixing bowls, strainers, measuring cups, shakers, cutting trays, water containers, chopsticks/foil, bag clips, extra utensils, utensil holder, spoon rest",
+    "Pantry stock + small countertop appliances"
   ]},
   { title:"Wave 4 — near the end (near-daily)", items:[
     "Dresser (after shifting current clothes)",
@@ -1538,9 +351,39 @@ var MOVE_DATA = [
     ["Work + personal laptops", "carry personally"],
     "Travel toiletry kit"
   ]},
+  { title:"Mail & Address Updates", items:[
+    ["USPS mail forwarding", "usps.com, ~$1.10 verification fee"],
+    "Update address: bank(s) and credit cards",
+    "Update address: insurance",
+    "Update address: employer / HR",
+    "Update address: IRS, if needed",
+    ["Texas DPS — driver's license + vehicle registration", "required within 30 days of moving"],
+    "Update voter registration",
+    "Update Amazon and other recurring-delivery accounts"
+  ]},
+  { title:"Services & Subscriptions", items:[
+    ["Renters insurance for the new address", "new policy, not transferable from the old one"],
+    "Set up home security, if wanted",
+    "Update recurring deliveries, meal kits, subscription boxes",
+    ["Waffles' microchip registration", "update to the new address"],
+    "Find/transfer to a Manor-area vet"
+  ]},
+  { title:"Shop / Business Address", items:[
+    "Update Etsy shop return address and shipping-label origin",
+    "Update business address anywhere else it's listed (invoices, commission contract template)",
+    ["Confirm garage circuit capacity", "before moving in the table saw and other 120V tools"]
+  ]},
   { pin:true, title:"Final trip", items:[
     ["Fridge + freezer food", "coolers, move fast"],
     ["Mattress", "very last thing out"]
+  ]},
+  { pin:true, title:"Stop / Transfer at the Old Apartment", note:"The true last step — close out once everything's out", items:[
+    "Give notice to the leasing office, check the required notice window",
+    "Schedule final electric/water/gas shutoff for the day after lease overlap ends",
+    "Cancel or transfer internet",
+    "Schedule the final walkthrough, get the deposit-return process in writing",
+    ["Patch walls and take dated photos for deposit protection", "keep a small toolkit + cleaning supplies on hand through the end for this"],
+    "Return keys"
   ]}
 ];
 
