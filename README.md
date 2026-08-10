@@ -2,8 +2,9 @@
 
 A single-file web app for tracking a move: one Checklist tab with the
 entire move end to end, and a Countdown tab for a date you choose.
-Everything is saved in the browser's local storage, per device —
-nothing is sent anywhere.
+Everything is saved in the browser's local storage by default, per
+device. Turn on Sync (below) to share checked-off progress between
+your laptop and phone.
 
 ## Checklist tab
 
@@ -19,6 +20,43 @@ own mini progress bar and count, and tapping a phase title collapses it
 so you can focus on what's current. "Reset all" clears the whole list
 for your next move. It saves to its own local storage key
 (`move_planner_move_v1`).
+
+## Syncing across devices
+
+By default, checked-off progress lives only in that browser's local
+storage, so your phone and laptop won't see each other's checkmarks.
+The "Set up sync" button at the top of the Checklist tab turns on
+free, no-login syncing through [kvdb.io](https://kvdb.io), a small
+key-value store:
+
+1. On your first device (say, your laptop), tap **Set up sync**. This
+   creates a private storage bucket and immediately syncs your current
+   checklist state to it.
+2. Tap **Copy code** to copy the sync code it generated (a short
+   random ID — this is effectively the "password" for your synced
+   checklist, so don't publish it anywhere public).
+3. On your other device (your phone), open the same page, paste that
+   code into the "Paste sync code from other device" field, and tap
+   **Connect**. It immediately pulls over whatever's checked so far.
+4. From then on, checking a box on either device pushes the update
+   automatically, and each device also polls for changes every 20
+   seconds while the page is open. Tap **Refresh now** any time to
+   pull the latest immediately (handy right after switching devices).
+5. **Disconnect** on a device stops that device from syncing (its
+   local checklist stays as-is) without affecting the shared data or
+   your other device.
+
+Notes:
+- Synced data is stored with kvdb.io, a third-party service — it's
+  just the checklist item IDs and their checked/unchecked state, no
+  personal details beyond what's already visible in the checklist
+  text itself, but it does leave your device once you turn sync on.
+  Skip this step if you'd rather keep everything fully local.
+- The sync code is the only thing that gates access to your synced
+  data. Anyone with the code could read or write it, so treat it like
+  a shared password — don't post it anywhere public.
+- If you want the same checklist on a third device, just repeat step
+  3 there with the same code.
 
 ## Deploy with GitHub Pages
 

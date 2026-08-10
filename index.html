@@ -61,6 +61,16 @@
   .tab-btn{flex:1;border:none;background:transparent;padding:9px 0;font-size:13.5px;color:var(--text-secondary);border-radius:11px;cursor:pointer;font-family:inherit;}
   .tab-btn.active{background:var(--surface);color:var(--text);font-weight:600;box-shadow:0 2px 10px rgba(94,74,180,0.14);}
   .hint{margin:6px 20px 0;font-size:10.5px;color:var(--text-muted);}
+  .sync-bar{padding:12px 20px;border-bottom:0.5px solid var(--border);background:var(--surface-alt);}
+  .sync-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+  .sync-status{font-size:12px;color:var(--text-secondary);}
+  .sync-btn{border:1px solid var(--border-strong);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:12px;color:var(--text);cursor:pointer;font-family:inherit;white-space:nowrap;}
+  .sync-btn.primary{background:linear-gradient(135deg, var(--accent), #6a8ffc);border-color:var(--accent);color:var(--accent-ink);font-weight:600;}
+  .sync-code-row{display:flex;align-items:center;gap:8px;margin-top:8px;}
+  .sync-code-row code{flex:1;font-size:12.5px;padding:6px 8px;background:var(--surface);border-radius:6px;word-break:break-all;color:var(--text);}
+  .sync-actions{display:flex;gap:8px;margin-top:8px;}
+  .sync-join{display:flex;gap:8px;margin-top:8px;}
+  .sync-join input{flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border-strong);border-radius:8px;font-size:12.5px;font-family:inherit;color:var(--text);background:var(--surface);}
   footer{padding:16px 20px 28px;text-align:center;font-size:11px;color:var(--text-muted);}
   .countdown-wrap{padding:28px 20px 8px;text-align:center;}
   .cd-grid{display:flex;justify-content:center;gap:10px;margin-bottom:6px;}
@@ -134,6 +144,26 @@
   </div>
 
   <div id="view-move">
+    <div class="sync-bar" id="sync-bar">
+      <div class="sync-row">
+        <span class="sync-status" id="sync-status">Not synced across devices</span>
+        <button class="sync-btn primary" id="sync-setup-btn">Set up sync</button>
+      </div>
+      <div class="sync-connected" id="sync-connected" style="display:none;">
+        <div class="sync-code-row">
+          <code id="sync-code-value"></code>
+          <button type="button" class="sync-btn" id="sync-copy-btn">Copy code</button>
+        </div>
+        <div class="sync-actions">
+          <button type="button" class="sync-btn" id="sync-refresh-btn">Refresh now</button>
+          <button type="button" class="sync-btn" id="sync-disconnect-btn">Disconnect</button>
+        </div>
+      </div>
+      <div class="sync-join" id="sync-join">
+        <input type="text" id="sync-join-input" placeholder="Paste sync code from other device">
+        <button type="button" class="sync-btn" id="sync-join-btn">Connect</button>
+      </div>
+    </div>
     <div class="mv-hero">
       <div class="mv-hero-top">
         <span id="mv-progress-text">0 of 0 done</span>
@@ -450,7 +480,148 @@ function setMoveChecked(key, checked){
   var checkbox = document.querySelector('input[data-key="'+key+'"]');
   if(checkbox) checkbox.checked = checked;
   updateMoveProgress();
+  pushMoveState();
 }
+
+// ---------------------------------------------------------------- Cross-device sync
+var SYNC_KEY = "move_planner_sync_bucket_v1";
+var syncBucket = "";
+try{ syncBucket = localStorage.getItem(SYNC_KEY) || ""; }catch(e){ syncBucket = ""; }
+var SYNC_EMAIL = "anjelmartinez45@gmail.com";
+var SYNC_TTL = 315360000;
+var syncPolling = null;
+var lastSyncedJson = null;
+
+function syncUrl(path){ return "https://kvdb.io/" + syncBucket + path; }
+
+function updateSyncUI(status){
+  var statusEl = document.getElementById("sync-status");
+  var setupBtn = document.getElementById("sync-setup-btn");
+  var connected = document.getElementById("sync-connected");
+  var joinBox = document.getElementById("sync-join");
+  if(!statusEl) return;
+  if(syncBucket){
+    statusEl.textContent = status || "Synced across devices";
+    setupBtn.style.display = "none";
+    connected.style.display = "block";
+    joinBox.style.display = "none";
+    document.getElementById("sync-code-value").textContent = syncBucket;
+  } else {
+    statusEl.textContent = status || "Not synced across devices";
+    setupBtn.style.display = "inline-block";
+    connected.style.display = "none";
+    joinBox.style.display = "flex";
+  }
+}
+
+function pushMoveState(){
+  if(!syncBucket) return;
+  var json = JSON.stringify(moveState);
+  lastSyncedJson = json;
+  fetch(syncUrl("/state") + "?ttl=" + SYNC_TTL, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: json
+  }).catch(function(){});
+}
+
+function pullMoveState(showStatus){
+  if(!syncBucket) return Promise.resolve();
+  return fetch(syncUrl("/state"))
+    .then(function(res){
+      if(res.status === 404) return null;
+      if(!res.ok) throw new Error("sync fetch failed");
+      return res.text();
+    })
+    .then(function(text){
+      if(text === null || text === undefined) return;
+      if(text === lastSyncedJson) return;
+      var remote;
+      try{ remote = JSON.parse(text); }catch(e){ return; }
+      lastSyncedJson = text;
+      moveState = remote || {};
+      saveMoveState();
+      renderMoveTab();
+      if(showStatus) updateSyncUI("Synced just now");
+    })
+    .catch(function(){
+      if(showStatus) updateSyncUI("Sync failed — check connection");
+    });
+}
+
+function startSyncPolling(){
+  if(syncPolling) clearInterval(syncPolling);
+  if(!syncBucket) return;
+  syncPolling = setInterval(function(){ pullMoveState(false); }, 20000);
+}
+
+var syncSetupBtnEl = document.getElementById("sync-setup-btn");
+if(syncSetupBtnEl) syncSetupBtnEl.addEventListener("click", function(){
+  updateSyncUI("Setting up sync…");
+  var body = "email=" + encodeURIComponent(SYNC_EMAIL) + "&default_ttl=" + SYNC_TTL;
+  fetch("https://kvdb.io/", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body
+  })
+  .then(function(res){
+    if(!res.ok) throw new Error("bucket create failed");
+    return res.text();
+  })
+  .then(function(id){
+    syncBucket = id.trim();
+    localStorage.setItem(SYNC_KEY, syncBucket);
+    updateSyncUI("Synced across devices");
+    pushMoveState();
+    startSyncPolling();
+  })
+  .catch(function(){
+    updateSyncUI("Couldn't set up sync — try again");
+  });
+});
+
+var syncJoinBtnEl = document.getElementById("sync-join-btn");
+if(syncJoinBtnEl) syncJoinBtnEl.addEventListener("click", function(){
+  var code = document.getElementById("sync-join-input").value.trim();
+  if(!code) return;
+  syncBucket = code;
+  lastSyncedJson = null;
+  localStorage.setItem(SYNC_KEY, syncBucket);
+  updateSyncUI("Connecting…");
+  pullMoveState(true).then(function(){
+    startSyncPolling();
+  });
+});
+
+var syncRefreshBtnEl = document.getElementById("sync-refresh-btn");
+if(syncRefreshBtnEl) syncRefreshBtnEl.addEventListener("click", function(){
+  updateSyncUI("Refreshing…");
+  pullMoveState(true);
+});
+
+var syncDisconnectBtnEl = document.getElementById("sync-disconnect-btn");
+if(syncDisconnectBtnEl) syncDisconnectBtnEl.addEventListener("click", function(){
+  syncBucket = "";
+  lastSyncedJson = null;
+  localStorage.removeItem(SYNC_KEY);
+  if(syncPolling) clearInterval(syncPolling);
+  updateSyncUI();
+});
+
+var syncCopyBtnEl = document.getElementById("sync-copy-btn");
+if(syncCopyBtnEl) syncCopyBtnEl.addEventListener("click", function(){
+  var text = syncBucket;
+  var btn = syncCopyBtnEl;
+  var doneCopy = function(){ var old = btn.textContent; btn.textContent = "Copied!"; setTimeout(function(){ btn.textContent = old; }, 1500); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(doneCopy).catch(function(){ window.prompt("Copy this sync code:", text); });
+  } else {
+    window.prompt("Copy this sync code:", text);
+  }
+});
+
+updateSyncUI();
+if(syncBucket){ pullMoveState(true); startSyncPolling(); }
 
 document.addEventListener("click", function(e){
   var item = e.target.closest && e.target.closest(".mv-item");
@@ -476,6 +647,7 @@ document.getElementById("mv-reset-btn").addEventListener("click", function(){
   moveState = {};
   saveMoveState();
   renderMoveTab();
+  pushMoveState();
 });
 
 renderMoveTab();
