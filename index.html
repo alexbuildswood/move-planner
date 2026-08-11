@@ -74,6 +74,8 @@
   .sync-actions{display:flex;gap:8px;margin-top:8px;}
   .sync-join{display:flex;gap:8px;margin-top:8px;}
   .sync-join input{flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border-strong);border-radius:8px;font-size:12.5px;font-family:inherit;color:var(--text);background:var(--surface);}
+  .sync-hint{margin:6px 0 0;font-size:11px;color:var(--text-muted);line-height:1.4;}
+  #sync-last-saved{display:block;margin-top:4px;}
   footer{padding:16px 20px 28px;text-align:center;font-size:11px;color:var(--text-muted);}
   .countdown-wrap{padding:28px 20px 8px;text-align:center;}
   .cd-grid{display:flex;justify-content:center;gap:10px;margin-bottom:6px;}
@@ -178,6 +180,8 @@
           <code id="sync-code-value"></code>
           <button type="button" class="sync-btn" id="sync-copy-btn">Copy code</button>
         </div>
+        <p class="sync-hint">Make sure this exact code is entered on every device — even one different character means it's a separate, unshared list.</p>
+        <span class="sync-status" id="sync-last-saved"></span>
         <div class="sync-actions">
           <button type="button" class="sync-btn" id="sync-refresh-btn">Refresh now</button>
           <button type="button" class="sync-btn" id="sync-disconnect-btn">Disconnect</button>
@@ -199,7 +203,7 @@
     <div id="mv-body"></div>
   </div>
 
-  <footer>Saved automatically in this browser, on this device. <span id="app-build">build 31</span></footer>
+  <footer>Saved automatically in this browser, on this device. <span id="app-build">build 32</span></footer>
 </div>
 
 <script>
@@ -538,15 +542,35 @@ function updateSyncUI(status){
   }
 }
 
+function setLastSavedStatus(text){
+  var el = document.getElementById("sync-last-saved");
+  if(el) el.textContent = text;
+}
+
 function pushMoveState(){
-  if(!syncBucket) return;
+  if(!syncBucket) return Promise.resolve();
   var json = JSON.stringify(moveState);
   lastSyncedJson = json;
-  fetch(syncUrl("/state") + "?ttl=" + SYNC_TTL, {
+  var pushedBucket = syncBucket;
+  setLastSavedStatus("Saving…");
+  return fetchWithTimeout(syncUrl("/state") + "?ttl=" + SYNC_TTL, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: json
-  }).catch(function(){});
+  }, 10000)
+    .then(function(res){
+      if(syncBucket !== pushedBucket) return;
+      if(!res.ok) throw new Error("HTTP " + res.status);
+      var now = new Date();
+      var hh = now.getHours() % 12 || 12;
+      var mm = (now.getMinutes() < 10 ? "0" : "") + now.getMinutes();
+      setLastSavedStatus("Saved to cloud " + hh + ":" + mm + (now.getHours() < 12 ? " AM" : " PM"));
+    })
+    .catch(function(err){
+      if(syncBucket !== pushedBucket) return;
+      var reason = (err && err.name === "AbortError") ? "timed out" : ((err && err.message) || "unknown error");
+      setLastSavedStatus("Save failed (" + reason + ") — check connection, will retry on next check");
+    });
 }
 
 function fetchWithTimeout(url, options, ms){
@@ -649,6 +673,7 @@ if(syncDisconnectBtnEl) syncDisconnectBtnEl.addEventListener("click", function()
   lastSyncedJson = null;
   localStorage.removeItem(SYNC_KEY);
   if(syncPolling) clearInterval(syncPolling);
+  setLastSavedStatus("");
   updateSyncUI();
 });
 
