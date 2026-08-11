@@ -199,7 +199,7 @@
     <div id="mv-body"></div>
   </div>
 
-  <footer>Saved automatically in this browser, on this device.</footer>
+  <footer>Saved automatically in this browser, on this device. <span id="app-build">build 31</span></footer>
 </div>
 
 <script>
@@ -585,8 +585,11 @@ function pullMoveState(showStatus){
       renderMoveTab();
       if(showStatus) updateSyncUI("Synced just now");
     })
-    .catch(function(){
-      if(showStatus) updateSyncUI("Sync failed — check connection");
+    .catch(function(err){
+      if(showStatus){
+        var reason = (err && err.name === "AbortError") ? "timed out" : ((err && err.message) || "unknown error");
+        updateSyncUI("Sync failed (" + reason + ") — try again");
+      }
     });
 }
 
