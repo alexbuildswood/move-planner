@@ -203,7 +203,7 @@
     <div id="mv-body"></div>
   </div>
 
-  <footer>Saved automatically in this browser, on this device. <span id="app-build">build 32</span></footer>
+  <footer>Saved automatically in this browser, on this device. <span id="app-build">build 33</span></footer>
 </div>
 
 <script>
@@ -516,7 +516,7 @@ var SYNC_KEY = "move_planner_sync_bucket_v1";
 var syncBucket = "";
 try{ syncBucket = localStorage.getItem(SYNC_KEY) || ""; }catch(e){ syncBucket = ""; }
 var SYNC_EMAIL = "anjelmartinez45@gmail.com";
-var SYNC_TTL = 315360000;
+var SYNC_TTL = 5184000;
 var syncPolling = null;
 var lastSyncedJson = null;
 
@@ -547,24 +547,40 @@ function setLastSavedStatus(text){
   if(el) el.textContent = text;
 }
 
+function putState(json, withTtl){
+  var url = syncUrl("/state") + (withTtl ? ("?ttl=" + SYNC_TTL) : "");
+  return fetchWithTimeout(url, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: json
+  }, 10000);
+}
+
+function markSaved(){
+  var now = new Date();
+  var hh = now.getHours() % 12 || 12;
+  var mm = (now.getMinutes() < 10 ? "0" : "") + now.getMinutes();
+  setLastSavedStatus("Saved to cloud " + hh + ":" + mm + (now.getHours() < 12 ? " AM" : " PM"));
+}
+
 function pushMoveState(){
   if(!syncBucket) return Promise.resolve();
   var json = JSON.stringify(moveState);
   lastSyncedJson = json;
   var pushedBucket = syncBucket;
   setLastSavedStatus("Saving…");
-  return fetchWithTimeout(syncUrl("/state") + "?ttl=" + SYNC_TTL, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: json
-  }, 10000)
+  return putState(json, true)
     .then(function(res){
       if(syncBucket !== pushedBucket) return;
+      if(res.status === 403){
+        return putState(json, false).then(function(res2){
+          if(syncBucket !== pushedBucket) return;
+          if(!res2.ok) throw new Error("HTTP " + res2.status);
+          markSaved();
+        });
+      }
       if(!res.ok) throw new Error("HTTP " + res.status);
-      var now = new Date();
-      var hh = now.getHours() % 12 || 12;
-      var mm = (now.getMinutes() < 10 ? "0" : "") + now.getMinutes();
-      setLastSavedStatus("Saved to cloud " + hh + ":" + mm + (now.getHours() < 12 ? " AM" : " PM"));
+      markSaved();
     })
     .catch(function(err){
       if(syncBucket !== pushedBucket) return;
